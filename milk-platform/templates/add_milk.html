@@ -11,7 +11,7 @@
 
 <div class="container content-wrapper">
     <div class="row justify-content-center">
-        <div class="col-md-6">
+        <div class="col-lg-6 col-md-8">
             <div class="card">
                 <div class="card-header">
                     New Milk Listing
@@ -24,12 +24,12 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-6 mb-3">
                                 <label for="morning_quantity" class="form-label">Morning Quantity (Litres)</label>
                                 <input type="number" class="form-control" id="morning_quantity" name="morning_quantity"
                                     step="0.5" min="0" placeholder="e.g. 25">
                             </div>
-                            <div class="col-md-6 mb-3">
+                            <div class="col-6 mb-3">
                                 <label for="evening_quantity" class="form-label">Evening Quantity (Litres)</label>
                                 <input type="number" class="form-control" id="evening_quantity" name="evening_quantity"
                                     step="0.5" min="0" placeholder="e.g. 20">
@@ -40,6 +40,30 @@
                             <label for="price_per_litre" class="form-label">Price per Litre (Rs)</label>
                             <input type="number" class="form-control" id="price_per_litre" name="price_per_litre"
                                 step="0.5" min="1" placeholder="e.g. 60" required>
+                        </div>
+
+                        <!-- Freshness Information -->
+                        <div class="freshness-section mb-3"
+                            style="background:#f5f6f8;border:1px solid #e2e5ea;border-radius:8px;padding:1.25rem;">
+                            <label class="form-label"
+                                style="color:#388e3c;font-weight:600;margin-bottom:0.5rem;">Freshness
+                                Information</label>
+                            <p class="form-text mt-0 mb-3">Help consumers know how fresh the milk is.</p>
+
+                            <div class="row">
+                                <div class="col-6 mb-2">
+                                    <label for="collection_time" class="form-label">Collection Time</label>
+                                    <input type="time" class="form-control" id="collection_time" name="collection_time"
+                                        placeholder="e.g. 05:30">
+                                    <div class="form-text">When milk was collected</div>
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <label for="delivery_estimate" class="form-label">Delivery By</label>
+                                    <input type="time" class="form-control" id="delivery_estimate"
+                                        name="delivery_estimate" placeholder="e.g. 08:00">
+                                    <div class="form-text">Estimated delivery time</div>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="d-flex gap-2">

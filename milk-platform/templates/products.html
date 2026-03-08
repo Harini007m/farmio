@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% block title %}Dairy Products - FarmIO{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h2>{% if role == 'farmer' %}Manage Products{% else %}Dairy Products{% endif %}</h2>
+        <p>{% if role == 'farmer' %}Convert unsold milk into value-added products{% else %}Fresh dairy products from
+            local farmers{% endif %}</p>
+    </div>
+</div>
+
+<div class="container content-wrapper">
+
+    {% if role == 'farmer' %}
+    <!-- Add Product Form -->
+    <div class="card mb-4">
+        <div class="card-header">
+            Add New Product
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('farmer_products') }}">
+                <div class="row align-items-end">
+                    <div class="col-md-4 mb-3">
+                        <label for="product_name" class="form-label">Product Name</label>
+                        <select class="form-select" id="product_name" name="product_name" required>
+                            <option value="" disabled selected>Select product</option>
+                            <option value="Paneer">Paneer</option>
+                            <option value="Butter">Butter</option>
+                            <option value="Ghee">Ghee</option>
+                            <option value="Cheese">Cheese</option>
+                            <option value="Curd">Curd</option>
+                            <option value="Buttermilk">Buttermilk</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="quantity" class="form-label">Quantity</label>
+                        <input type="number" class="form-control" id="quantity" name="quantity" step="0.1" min="0.1"
+                            placeholder="e.g. 5" required>
+                        <div class="form-text">kg / litres / units</div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="price" class="form-label">Price per unit (Rs)</label>
+                        <input type="number" class="form-control" id="price" name="price" step="1" min="1"
+                            placeholder="e.g. 300" required>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <button type="submit" class="btn btn-success w-100">Add</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Products List -->
+    {% if products %}
+    <div class="row g-4">
+        {% for product in products %}
+        <div class="col-md-4 col-lg-3">
+            <div class="product-card">
+                <div class="product-icon">
+                    {% if product['product_name']|lower == 'paneer' %}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                        <rect x="7" y="7" width="10" height="10" rx="1" />
+                    </svg>
+                    {% elif product['product_name']|lower == 'butter' %}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <ellipse cx="12" cy="12" rx="10" ry="6" />
+                        <path d="M2 12v2c0 3.31 4.48 6 10 6s10-2.69 10-6v-2" />
+                    </svg>
+                    {% elif product['product_name']|lower == 'ghee' %}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M8 2h8l2 4H6l2-4z" />
+                        <rect x="5" y="6" width="14" height="14" rx="2" />
+                        <line x1="12" y1="10" x2="12" y2="16" />
+                        <line x1="9" y1="13" x2="15" y2="13" />
+                    </svg>
+                    {% else %}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+                        <line x1="7" y1="7" x2="7.01" y2="7" />
+                    </svg>
+                    {% endif %}
+                </div>
+
+                <h6>{{ product['product_name'] }}</h6>
+
+                {% if role == 'consumer' %}
+                <p class="product-detail">Farm: <strong>{{ product['farm_name'] }}</strong></p>
+                {% endif %}
+
+                <p class="product-detail">Available: <strong>{{ product['quantity'] }}</strong></p>
+                <p class="product-detail mb-3">Price: <strong>Rs. {{ product['price'] }}</strong>/unit</p>
+
+                {% if role == 'farmer' %}
+                <form method="POST" action="{{ url_for('delete_product', product_id=product['product_id']) }}">
+                    <button type="submit" class="btn btn-outline-danger btn-sm w-100 btn-delete-confirm">
+                        Remove
+                    </button>
+                </form>
+                {% else %}
+                <form method="POST" action="{{ url_for('buy_product', product_id=product['product_id']) }}"
+                    class="buy-product-form">
+                    <div class="input-group input-group-sm mb-2">
+                        <input type="number" class="form-control" name="quantity" min="0.1"
+                            max="{{ product['quantity'] }}" step="0.1" placeholder="Qty" required>
+                        <button type="submit" class="btn btn-success btn-sm">Buy</button>
+                    </div>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card">
+        <div class="card-body">
+            <div class="empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+                    <line x1="7" y1="7" x2="7.01" y2="7" />
+                </svg>
+                <h5>No Products Available</h5>
+                <p>{% if role == 'farmer' %}Add value-added dairy products from your unsold milk.{% else %}No dairy
+                    products are available yet. Check back later!{% endif %}</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

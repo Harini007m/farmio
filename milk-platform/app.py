@@ -62,6 +62,9 @@ def init_db():
             morning_quantity REAL DEFAULT 0,
             evening_quantity REAL DEFAULT 0,
             price_per_litre REAL NOT NULL,
+            collection_time TEXT DEFAULT '',
+            delivery_estimate TEXT DEFAULT '',
+            external_sold REAL DEFAULT 0,
             FOREIGN KEY (farmer_id) REFERENCES farmers(farmer_id)
         );
 
@@ -288,7 +291,8 @@ def farmer_dashboard():
     ''', (farmer_id, today)).fetchall()
 
     total_ordered = sum(o['quantity'] for o in today_orders)
-    remaining = total_listed - total_ordered
+    total_external = sum(l['external_sold'] for l in today_listings)
+    remaining = total_listed - total_ordered - total_external
 
     all_orders = db.execute('''
         SELECT o.*, u.name as consumer_name, ml.date as listing_date
@@ -322,6 +326,7 @@ def farmer_dashboard():
                            total_morning=total_morning,
                            total_evening=total_evening,
                            total_ordered=total_ordered,
+                           total_external=total_external,
                            remaining=remaining,
                            today_orders=today_orders,
                            all_orders=all_orders,
@@ -341,17 +346,66 @@ def add_milk():
         morning_qty = float(request.form.get('morning_quantity', 0) or 0)
         evening_qty = float(request.form.get('evening_quantity', 0) or 0)
         price = float(request.form['price_per_litre'])
+        collection_time = request.form.get('collection_time', '').strip()
+        delivery_estimate = request.form.get('delivery_estimate', '').strip()
 
         db = get_db()
         db.execute(
-            'INSERT INTO milk_listings (farmer_id, date, morning_quantity, evening_quantity, price_per_litre) VALUES (?, ?, ?, ?, ?)',
-            (farmer_id, listing_date, morning_qty, evening_qty, price)
+            'INSERT INTO milk_listings (farmer_id, date, morning_quantity, evening_quantity, price_per_litre, collection_time, delivery_estimate) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            (farmer_id, listing_date, morning_qty, evening_qty, price, collection_time, delivery_estimate)
         )
         db.commit()
         flash('Milk listing added successfully!', 'success')
         return redirect(url_for('farmer_dashboard'))
 
     return render_template('add_milk.html', today=str(date.today()))
+
+
+# ─── Routes: Mark milk as externally used ────────────────────────────────────────
+@app.route('/farmer/mark-milk-used/<int:listing_id>', methods=['POST'])
+@login_required
+@farmer_required
+def mark_milk_used(listing_id):
+    db = get_db()
+    farmer_id = session.get('farmer_id')
+
+    listing = db.execute(
+        'SELECT * FROM milk_listings WHERE listing_id = ? AND farmer_id = ?',
+        (listing_id, farmer_id)
+    ).fetchone()
+
+    if not listing:
+        flash('Listing not found.', 'danger')
+        return redirect(url_for('farmer_dashboard'))
+
+    qty_used = float(request.form.get('qty_used', 0) or 0)
+    reason = request.form.get('reason', '').strip() or 'External sale'
+
+    if qty_used <= 0:
+        flash('Please enter a valid quantity.', 'danger')
+        return redirect(url_for('farmer_dashboard'))
+
+    # Calculate how much is actually remaining on this listing
+    ordered = db.execute(
+        'SELECT COALESCE(SUM(quantity), 0) FROM orders WHERE listing_id = ?',
+        (listing_id,)
+    ).fetchone()[0]
+    total_milk = listing['morning_quantity'] + listing['evening_quantity']
+    current_external = listing['external_sold'] or 0
+    actual_remaining = total_milk - ordered - current_external
+
+    if qty_used > actual_remaining:
+        flash(f'Cannot mark {qty_used}L as used. Only {actual_remaining:.1f}L remaining.', 'danger')
+        return redirect(url_for('farmer_dashboard'))
+
+    new_external = current_external + qty_used
+    db.execute(
+        'UPDATE milk_listings SET external_sold = ? WHERE listing_id = ?',
+        (new_external, listing_id)
+    )
+    db.commit()
+    flash(f'{qty_used:.1f}L marked as used ({reason}). Remaining updated.', 'success')
+    return redirect(url_for('farmer_dashboard'))
 
 
 # ─── Routes: Farmer orders view ─────────────────────────────────────────────────
@@ -479,10 +533,26 @@ def consumer_dashboard():
          FROM milk_listings ml WHERE ml.farmer_id = f.farmer_id AND ml.date = ?) as total_available,
         (SELECT COALESCE(SUM(o.quantity), 0)
          FROM orders o WHERE o.farmer_id = f.farmer_id
-         AND o.order_date = ?) as total_ordered
+         AND o.order_date = ?) as total_ordered,
+        (SELECT COALESCE(SUM(ml2.external_sold), 0)
+         FROM milk_listings ml2 WHERE ml2.farmer_id = f.farmer_id AND ml2.date = ?) as total_external
         FROM farmers f
         JOIN users u ON f.user_id = u.user_id
-    ''', (today, today)).fetchall()
+    ''', (today, today, today)).fetchall()
+
+    # Get freshness info for today's listings per farmer
+    freshness_map = {}
+    all_listings = db.execute('''
+        SELECT farmer_id, collection_time, delivery_estimate
+        FROM milk_listings WHERE date = ? AND (collection_time != '' OR delivery_estimate != '')
+        ORDER BY listing_id DESC
+    ''', (today,)).fetchall()
+    for fl in all_listings:
+        if fl['farmer_id'] not in freshness_map:
+            freshness_map[fl['farmer_id']] = {
+                'collection_time': fl['collection_time'],
+                'delivery_estimate': fl['delivery_estimate']
+            }
 
     farmer_list = []
     for f in farmers:
@@ -499,7 +569,9 @@ def consumer_dashboard():
         if dist <= max_distance_km or consumer_lat == 0 or farmer_lat == 0:
             total_avail = f['total_available'] or 0
             total_ord = f['total_ordered'] or 0
-            remaining = total_avail - total_ord
+            total_ext = f['total_external'] or 0
+            remaining = total_avail - total_ord - total_ext
+            freshness = freshness_map.get(f['farmer_id'], {})
             farmer_list.append({
                 'farmer_id': f['farmer_id'],
                 'farmer_name': f['farmer_name'],
@@ -509,7 +581,9 @@ def consumer_dashboard():
                 'price_per_litre': f['price_per_litre'],
                 'total_available': total_avail,
                 'remaining': max(0, remaining),
-                'distance_km': round(dist, 1)
+                'distance_km': round(dist, 1),
+                'collection_time': freshness.get('collection_time', ''),
+                'delivery_estimate': freshness.get('delivery_estimate', '')
             })
 
     # Sort by distance (nearest first)
@@ -602,14 +676,17 @@ def place_order(farmer_id):
             'SELECT COALESCE(SUM(quantity), 0) FROM orders WHERE listing_id = ?',
             (l['listing_id'],)
         ).fetchone()[0]
-        remaining = (l['morning_quantity'] + l['evening_quantity']) - ordered
+        external = l['external_sold'] or 0
+        remaining = (l['morning_quantity'] + l['evening_quantity']) - ordered - external
         listing_data.append({
             'listing_id': l['listing_id'],
             'date': l['date'],
             'morning_quantity': l['morning_quantity'],
             'evening_quantity': l['evening_quantity'],
             'price_per_litre': l['price_per_litre'],
-            'remaining': max(0, remaining)
+            'remaining': max(0, remaining),
+            'collection_time': l['collection_time'] or '',
+            'delivery_estimate': l['delivery_estimate'] or ''
         })
 
     return render_template('place_order.html',

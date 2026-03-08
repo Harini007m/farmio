@@ -12,7 +12,7 @@
 <div class="container content-wrapper">
     <div class="row">
         <!-- Farmer Info -->
-        <div class="col-md-4 mb-4">
+        <div class="col-lg-4 col-md-5 mb-4">
             <div class="card">
                 <div class="card-header">Farmer Details</div>
                 <div class="card-body">
@@ -38,7 +38,7 @@
         </div>
 
         <!-- Order Form -->
-        <div class="col-md-8">
+        <div class="col-lg-8 col-md-7">
             {% if listings %}
             <div class="card mb-4">
                 <div class="card-header">Select a Listing ({{ today }})</div>
@@ -67,6 +67,20 @@
                                         <span class="detail-label">Price</span>
                                         <span class="detail-value">Rs. {{ listing['price_per_litre'] }}/L</span>
                                     </div>
+                                    {% if listing['collection_time'] %}
+                                    <div class="detail-row">
+                                        <span class="detail-label">Collected At</span>
+                                        <span class="detail-value" style="color:#388e3c;">{{ listing['collection_time']
+                                            }}</span>
+                                    </div>
+                                    {% endif %}
+                                    {% if listing['delivery_estimate'] %}
+                                    <div class="detail-row">
+                                        <span class="detail-label">Delivery By</span>
+                                        <span class="detail-value" style="color:#388e3c;">{{
+                                            listing['delivery_estimate'] }}</span>
+                                    </div>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
@@ -83,12 +97,12 @@
                             value="{{ listings[0]['listing_id'] if listings else '' }}" required>
 
                         <div class="row">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-6 col-6 mb-3">
                                 <label for="quantity" class="form-label">Quantity (Litres)</label>
                                 <input type="number" class="form-control" id="quantity" name="quantity" step="0.5"
                                     min="0.5" placeholder="e.g. 5" required>
                             </div>
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-6 col-6 mb-3">
                                 <label for="delivery_time" class="form-label">Delivery Time</label>
                                 <select class="form-select" id="delivery_time" name="delivery_time" required>
                                     <option value="morning">Morning</option>

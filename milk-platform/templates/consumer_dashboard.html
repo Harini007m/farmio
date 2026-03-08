@@ -31,7 +31,7 @@
     {% if farmers %}
     <div class="row g-4 mb-4">
         {% for farmer in farmers %}
-        <div class="col-md-4">
+        <div class="col-lg-4 col-md-6">
             <div class="farmer-card">
                 <div class="farmer-header">
                     <div class="farmer-avatar">
@@ -58,17 +58,25 @@
                         </span>
                     </div>
                     <div class="detail-row">
-                        <span class="detail-label">Capacity</span>
-                        <span class="detail-value">{{ farmer['milk_capacity_per_day'] }} L/day</span>
+                        <span class="detail-label">Available Today</span>
+                        <span class="detail-value available">{{ farmer['remaining'] }} L</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Price</span>
                         <span class="detail-value">Rs. {{ farmer['price_per_litre'] }}/L</span>
                     </div>
+                    {% if farmer['collection_time'] %}
                     <div class="detail-row">
-                        <span class="detail-label">Available Today</span>
-                        <span class="detail-value available">{{ farmer['remaining'] }} L</span>
+                        <span class="detail-label">Collection Time</span>
+                        <span class="detail-value" style="color:#388e3c;">{{ farmer['collection_time'] }}</span>
                     </div>
+                    {% endif %}
+                    {% if farmer['delivery_estimate'] %}
+                    <div class="detail-row">
+                        <span class="detail-label">Delivery By</span>
+                        <span class="detail-value" style="color:#388e3c;">{{ farmer['delivery_estimate'] }}</span>
+                    </div>
+                    {% endif %}
                 </div>
                 <a href="{{ url_for('place_order', farmer_id=farmer['farmer_id']) }}" class="btn btn-success btn-order">
                     Order Milk
@@ -96,11 +104,14 @@
 
     <!-- Quick Links -->
     <div class="row g-3 mb-4">
-        <div class="col-md-6">
-            <a href="{{ url_for('consumer_orders') }}" class="btn btn-outline-success w-100">View My Orders</a>
+        <div class="col-md-4 col-12">
+            <a href="{{ url_for('consumer_orders') }}" class="btn btn-outline-success w-100">View Order History</a>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-4 col-6">
             <a href="{{ url_for('consumer_products') }}" class="btn btn-outline-success w-100">Browse Dairy Products</a>
+        </div>
+        <div class="col-md-4 col-6">
+            <a href="{{ url_for('consumer_dashboard') }}" class="btn btn-outline-secondary w-100">Refresh</a>
         </div>
     </div>
 
