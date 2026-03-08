@@ -398,6 +398,27 @@ def update_order_status(order_id):
     return redirect(url_for('farmer_orders'))
 
 
+@app.route('/farmer/update-product-order-status/<int:order_id>', methods=['POST'])
+@login_required
+@farmer_required
+def update_product_order_status(order_id):
+    status = request.form['status']
+    db = get_db()
+    # Verify this product order belongs to the farmer
+    po = db.execute('''
+        SELECT po.product_order_id FROM product_orders po
+        JOIN products p ON po.product_id = p.product_id
+        WHERE po.product_order_id = ? AND p.farmer_id = ?
+    ''', (order_id, session.get('farmer_id'))).fetchone()
+    if po:
+        db.execute('UPDATE product_orders SET status = ? WHERE product_order_id = ?', (status, order_id))
+        db.commit()
+        flash('Product order status updated.', 'success')
+    else:
+        flash('Order not found.', 'danger')
+    return redirect(url_for('farmer_orders'))
+
+
 # ─── Routes: Products ───────────────────────────────────────────────────────────
 @app.route('/farmer/products', methods=['GET', 'POST'])
 @login_required

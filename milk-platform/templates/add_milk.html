@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}Add Milk Listing - FarmIO{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h2>Add Milk Listing</h2>
+        <p>Enter your milk availability for the day</p>
+    </div>
+</div>
+
+<div class="container content-wrapper">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    New Milk Listing
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('add_milk') }}">
+                        <div class="mb-3">
+                            <label for="date" class="form-label">Date</label>
+                            <input type="date" class="form-control" id="date" name="date" value="{{ today }}" required>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="morning_quantity" class="form-label">Morning Quantity (Litres)</label>
+                                <input type="number" class="form-control" id="morning_quantity" name="morning_quantity"
+                                    step="0.5" min="0" placeholder="e.g. 25">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="evening_quantity" class="form-label">Evening Quantity (Litres)</label>
+                                <input type="number" class="form-control" id="evening_quantity" name="evening_quantity"
+                                    step="0.5" min="0" placeholder="e.g. 20">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="price_per_litre" class="form-label">Price per Litre (Rs)</label>
+                            <input type="number" class="form-control" id="price_per_litre" name="price_per_litre"
+                                step="0.5" min="1" placeholder="e.g. 60" required>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success flex-fill">Add Listing</button>
+                            <a href="{{ url_for('farmer_dashboard') }}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
