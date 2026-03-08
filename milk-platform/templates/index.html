@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+{% block title %}FarmIO - Fresh Milk Direct from Farm{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-7">
+                <h1>Fresh Milk, Straight from the Farm</h1>
+                <p class="lead">
+                    Connect directly with local dairy farmers. Order fresh milk daily or subscribe
+                    for doorstep delivery. No intermediaries, just pure farm-fresh goodness.
+                </p>
+                <div class="d-flex gap-2 mt-3">
+                    {% if session.get('user_id') %}
+                    {% if session.get('role') == 'farmer' %}
+                    <a href="{{ url_for('farmer_dashboard') }}" class="btn btn-success">Go to Dashboard</a>
+                    {% else %}
+                    <a href="{{ url_for('consumer_dashboard') }}" class="btn btn-success">Browse Farmers</a>
+                    {% endif %}
+                    {% else %}
+                    <a href="{{ url_for('register') }}" class="btn btn-success">Get Started</a>
+                    <a href="{{ url_for('login') }}" class="btn btn-outline-secondary">Login</a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-5 d-none d-lg-block text-end">
+                <svg width="280" height="200" viewBox="0 0 280 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="20" y="80" width="100" height="100" rx="12" fill="#e8f5e9" />
+                    <rect x="140" y="60" width="120" height="120" rx="12" fill="#c8e6c9" />
+                    <circle cx="70" cy="60" r="30" fill="#4caf50" opacity="0.3" />
+                    <rect x="50" y="110" width="40" height="50" rx="6" fill="#4caf50" />
+                    <rect x="55" y="105" width="30" height="10" rx="3" fill="#388e3c" />
+                    <rect x="170" y="90" width="60" height="60" rx="8" fill="#fff" stroke="#e2e5ea" stroke-width="2" />
+                    <line x1="185" y1="105" x2="215" y2="105" stroke="#4caf50" stroke-width="3"
+                        stroke-linecap="round" />
+                    <line x1="185" y1="115" x2="210" y2="115" stroke="#c8e6c9" stroke-width="3"
+                        stroke-linecap="round" />
+                    <line x1="185" y1="125" x2="205" y2="125" stroke="#c8e6c9" stroke-width="3"
+                        stroke-linecap="round" />
+                    <circle cx="240" cy="50" r="15" fill="#e8f5e9" />
+                    <circle cx="30" cy="170" r="10" fill="#c8e6c9" />
+                </svg>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats -->
+<section class="section-grey">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <span class="stat-number" data-count="{{ farmer_count }}">0</span>
+                    <span class="stat-label">Registered Farmers</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <span class="stat-number" data-count="{{ listing_count }}">0</span>
+                    <span class="stat-label">Today's Listings</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <span class="stat-number" data-count="{{ order_count }}">0</span>
+                    <span class="stat-label">Orders Completed</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features -->
+<section class="container" style="padding: 3rem 0;">
+    <h2 class="section-heading text-center" style="display:inline-block;margin:0 auto 2rem;width:100%;">
+        How It Works
+    </h2>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="feature-card">
+                <div class="feature-icon mx-auto">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    </svg>
+                </div>
+                <h5>Farm Fresh Quality</h5>
+                <p>Get milk directly from verified local dairy farmers. No middlemen, no delays, just pure farm-fresh
+                    milk.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-card">
+                <div class="feature-icon mx-auto">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <rect x="1" y="3" width="15" height="13" rx="2" />
+                        <path d="M16 8h4l3 3v5a1 1 0 0 1-1 1h-1" />
+                        <circle cx="5.5" cy="18.5" r="2.5" />
+                        <circle cx="18.5" cy="18.5" r="2.5" />
+                    </svg>
+                </div>
+                <h5>Daily Doorstep Delivery</h5>
+                <p>Choose morning or evening delivery. Order once or subscribe daily for hassle-free fresh milk at your
+                    door.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-card">
+                <div class="feature-icon mx-auto">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+                        <line x1="7" y1="7" x2="7.01" y2="7" />
+                    </svg>
+                </div>
+                <h5>Value-Added Products</h5>
+                <p>Farmers convert unsold milk into paneer, butter, ghee, and cheese. Zero waste, maximum value.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Workflow -->
+<section class="section-grey">
+    <div class="container">
+        <h2 class="section-heading text-center" style="display:inline-block;margin:0 auto 2rem;width:100%;">
+            Platform Workflow
+        </h2>
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="text-center">
+                    <div class="feature-icon mx-auto mb-3"
+                        style="width:48px;height:48px;background:#e8f5e9;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;">
+                        <strong class="text-green">1</strong>
+                    </div>
+                    <h6 style="font-weight:700;">Register</h6>
+                    <p class="text-muted" style="font-size:0.85rem;">Sign up as a farmer or consumer to get started.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center">
+                    <div class="feature-icon mx-auto mb-3"
+                        style="width:48px;height:48px;background:#e8f5e9;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;">
+                        <strong class="text-green">2</strong>
+                    </div>
+                    <h6 style="font-weight:700;">List Milk</h6>
+                    <p class="text-muted" style="font-size:0.85rem;">Farmers add daily milk availability with pricing.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center">
+                    <div class="feature-icon mx-auto mb-3"
+                        style="width:48px;height:48px;background:#e8f5e9;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;">
+                        <strong class="text-green">3</strong>
+                    </div>
+                    <h6 style="font-weight:700;">Place Orders</h6>
+                    <p class="text-muted" style="font-size:0.85rem;">Consumers browse listings and order fresh milk.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center">
+                    <div class="feature-icon mx-auto mb-3"
+                        style="width:48px;height:48px;background:#e8f5e9;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;">
+                        <strong class="text-green">4</strong>
+                    </div>
+                    <h6 style="font-weight:700;">Value Products</h6>
+                    <p class="text-muted" style="font-size:0.85rem;">Unsold milk becomes paneer, butter, ghee, or
+                        cheese.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
