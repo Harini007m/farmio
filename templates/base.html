@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="FarmIO - Hyperlocal direct milk supply platform connecting dairy farmers with nearby consumers.">
+    <meta name="description"
+        content="FarmIO - Hyperlocal direct milk supply platform connecting dairy farmers with nearby consumers.">
     <title>{% block title %}FarmIO - Fresh Milk Direct from Farm{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
+
 <body>
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg">
@@ -23,45 +26,51 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center">
                     {% if session.get('user_id') %}
-                        {% if session.get('role') == 'farmer' %}
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('farmer_dashboard') }}">Dashboard</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('add_milk') }}">Add Milk</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('farmer_orders') }}">Orders</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('farmer_products') }}">Products</a>
-                            </li>
-                        {% else %}
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('consumer_dashboard') }}">Dashboard</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('consumer_orders') }}">My Orders</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('consumer_products') }}">Products</a>
-                            </li>
-                        {% endif %}
-                        <li class="nav-item ms-2">
-                            <span class="nav-link text-muted" style="font-size:0.85rem;">
-                                {{ session.get('user_name', '') }}
-                            </span>
-                        </li>
-                        <li class="nav-item ms-1">
-                            <a class="btn btn-outline-success btn-sm" href="{{ url_for('logout') }}">Logout</a>
-                        </li>
+                    {% if session.get('role') == 'farmer' %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('farmer_dashboard') }}">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('add_milk') }}">Add Milk</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('farmer_orders') }}">Orders</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('farmer_products') }}">Products</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('farmer_subscriptions') }}">Subscriptions</a>
+                    </li>
                     {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('login') }}">Login</a>
-                        </li>
-                        <li class="nav-item ms-1">
-                            <a class="btn btn-success btn-sm" href="{{ url_for('register') }}">Register</a>
-                        </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('consumer_dashboard') }}">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('consumer_orders') }}">My Orders</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('consumer_subscriptions') }}">Subscriptions</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('consumer_products') }}">Products</a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item ms-2">
+                        <span class="nav-link text-muted" style="font-size:0.85rem;">
+                            {{ session.get('user_name', '') }}
+                        </span>
+                    </li>
+                    <li class="nav-item ms-1">
+                        <a class="btn btn-outline-success btn-sm" href="{{ url_for('logout') }}">Logout</a>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+                    </li>
+                    <li class="nav-item ms-1">
+                        <a class="btn btn-success btn-sm" href="{{ url_for('register') }}">Register</a>
+                    </li>
                     {% endif %}
                 </ul>
             </div>
@@ -71,14 +80,14 @@
     <!-- Flash messages -->
     <div class="container mt-3">
         {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
         {% endwith %}
     </div>
 
@@ -96,4 +105,5 @@
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
     {% block scripts %}{% endblock %}
 </body>
+
 </html>
