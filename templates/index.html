@@ -2,177 +2,182 @@
 {% block title %}FarmIO - Fresh Milk Direct from Farm{% endblock %}
 
 {% block content %}
-<!-- Hero -->
+<!-- Hero Section -->
 <section class="hero-section">
     <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-7">
-                <h1>Fresh Milk, Straight from the Farm</h1>
+        <div class="row align-items-center g-5">
+            <div class="col-lg-7 text-center text-lg-start animate-fade" style="animation-delay: 0.1s;">
+                <h1>Fresh Milk, Straight <br><span class="text-green">from the Farm.</span></h1>
                 <p class="lead">
-                    Connect directly with local dairy farmers. Order fresh milk daily or subscribe
-                    for doorstep delivery. No intermediaries, just pure farm-fresh goodness.
+                    Experience the purity of hyperlocal direct milk supply. Connect with local dairy farmers,
+                    ensure quality, and enjoy doorstep delivery without middlemen.
                 </p>
-                <div class="d-flex gap-2 mt-3">
+                <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center justify-content-lg-start mt-4">
                     {% if session.get('user_id') %}
                     {% if session.get('role') == 'farmer' %}
-                    <a href="{{ url_for('farmer_dashboard') }}" class="btn btn-success">Go to Dashboard</a>
+                    <a href="{{ url_for('farmer_dashboard') }}" class="btn btn-success btn-lg rounded-pill px-5">Go to
+                        Dashboard</a>
                     {% else %}
-                    <a href="{{ url_for('consumer_dashboard') }}" class="btn btn-success">Browse Farmers</a>
+                    <a href="{{ url_for('consumer_dashboard') }}"
+                        class="btn btn-success btn-lg rounded-pill px-5">Browse Farmers</a>
                     {% endif %}
                     {% else %}
-                    <a href="{{ url_for('register') }}" class="btn btn-success">Get Started</a>
-                    <a href="{{ url_for('login') }}" class="btn btn-outline-secondary">Login</a>
+                    <a href="{{ url_for('register') }}" class="btn btn-success btn-lg rounded-pill px-5">Get Started
+                        Today</a>
+                    <a href="{{ url_for('login') }}" class="btn btn-outline-success btn-lg rounded-pill px-5">Member
+                        Login</a>
                     {% endif %}
                 </div>
+
+                <div
+                    class="mt-5 d-flex align-items-center justify-content-center justify-content-lg-start gap-4 text-muted small fw-bold">
+                    <div class="d-flex align-items-center gap-2">
+                        <svg width="20" height="20" fill="var(--p-500)" viewBox="0 0 24 24">
+                            <path
+                                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                        </svg>
+                        Direct from Farm
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <svg width="20" height="20" fill="var(--p-500)" viewBox="0 0 24 24">
+                            <path
+                                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                        </svg>
+                        Zero Middlemen
+                    </div>
+                </div>
             </div>
-            <div class="col-lg-5 d-none d-lg-block text-end">
-                <svg width="280" height="200" viewBox="0 0 280 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="20" y="80" width="100" height="100" rx="12" fill="#e8f5e9" />
-                    <rect x="140" y="60" width="120" height="120" rx="12" fill="#c8e6c9" />
-                    <circle cx="70" cy="60" r="30" fill="#4caf50" opacity="0.3" />
-                    <rect x="50" y="110" width="40" height="50" rx="6" fill="#4caf50" />
-                    <rect x="55" y="105" width="30" height="10" rx="3" fill="#388e3c" />
-                    <rect x="170" y="90" width="60" height="60" rx="8" fill="#fff" stroke="#e2e5ea" stroke-width="2" />
-                    <line x1="185" y1="105" x2="215" y2="105" stroke="#4caf50" stroke-width="3"
-                        stroke-linecap="round" />
-                    <line x1="185" y1="115" x2="210" y2="115" stroke="#c8e6c9" stroke-width="3"
-                        stroke-linecap="round" />
-                    <line x1="185" y1="125" x2="205" y2="125" stroke="#c8e6c9" stroke-width="3"
-                        stroke-linecap="round" />
-                    <circle cx="240" cy="50" r="15" fill="#e8f5e9" />
-                    <circle cx="30" cy="170" r="10" fill="#c8e6c9" />
-                </svg>
+            <div class="col-lg-5 animate-fade" style="animation-delay: 0.3s;">
+                <div class="hero-image-wrapper">
+                    <img src="{{ url_for('static', filename='farm_fresh_milk_hero.png') }}" alt="Fresh Milk"
+                        class="img-fluid">
+                    <!-- Decorative elements -->
+                    <div class="position-absolute top-0 start-0 translate-middle-y bg-white p-3 rounded-lg shadow-premium d-none d-sm-block animate-fade"
+                        style="animation-delay:0.8s; border-radius: 16px;">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="bg-success rounded-circle p-2">
+                                <svg width="24" height="24" fill="white" viewBox="0 0 24 24">
+                                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="mb-0 fw-bold text-dark">Verified Farm</p>
+                                <p class="mb-0 x-small text-muted">100% Quality Assurance</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Stats -->
+<!-- Stats Bar -->
 <section class="section-grey">
     <div class="container">
         <div class="row g-4">
-            <div class="col-md-4">
-                <div class="stat-card">
-                    <span class="stat-number" data-count="{{ farmer_count }}">0</span>
-                    <span class="stat-label">Registered Farmers</span>
+            <div class="col-md-4 animate-fade" style="animation-delay: 0.1s;">
+                <div class="stat-card border-0 shadow-premium">
+                    <span class="stat-number">{{ farmer_count }}</span>
+                    <span class="stat-label">Verified Farmers</span>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="stat-card">
-                    <span class="stat-number" data-count="{{ listing_count }}">0</span>
-                    <span class="stat-label">Today's Listings</span>
+            <div class="col-md-4 animate-fade" style="animation-delay: 0.2s;">
+                <div class="stat-card border-0 shadow-premium">
+                    <span class="stat-number">{{ listing_count }}</span>
+                    <span class="stat-label">Listings Today</span>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="stat-card">
-                    <span class="stat-number" data-count="{{ order_count }}">0</span>
-                    <span class="stat-label">Orders Completed</span>
+            <div class="col-md-4 animate-fade" style="animation-delay: 0.3s;">
+                <div class="stat-card border-0 shadow-premium">
+                    <span class="stat-number">{{ order_count }}</span>
+                    <span class="stat-label">Success Deliveries</span>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Features -->
-<section class="container" style="padding: 3rem 0;">
-    <h2 class="section-heading text-center" style="display:inline-block;margin:0 auto 2rem;width:100%;">
-        How It Works
-    </h2>
+<!-- Features Grid -->
+<section class="container" style="padding: 8rem 0;">
+    <div class="text-center mb-5 animate-fade">
+        <h2 class="section-heading d-inline-block">Why FarmIO?</h2>
+        <p class="text-muted lead">The most trusted bridge between dairy farms and your home.</p>
+    </div>
+
     <div class="row g-4">
-        <div class="col-md-4">
-            <div class="feature-card">
-                <div class="feature-icon mx-auto">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                    </svg>
+        <div class="col-md-4 animate-fade" style="animation-delay: 0.1s;">
+            <div class="feature-card border-0 shadow-sm">
+                <div class="feature-icon mx-auto p-3">
+                    <img src="{{ url_for('static', filename='leaf_icon.png') }}" alt="Natural"
+                        style="width: 48px; height: 48px;">
                 </div>
-                <h5>Farm Fresh Quality</h5>
-                <p>Get milk directly from verified local dairy farmers. No middlemen, no delays, just pure farm-fresh
-                    milk.</p>
+                <h5>Pure & Natural</h5>
+                <p>We believe in the power of nature. Our farmers follow traditional dairying practices to ensure the
+                    most natural milk profile.</p>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="feature-card">
-                <div class="feature-icon mx-auto">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <rect x="1" y="3" width="15" height="13" rx="2" />
-                        <path d="M16 8h4l3 3v5a1 1 0 0 1-1 1h-1" />
-                        <circle cx="5.5" cy="18.5" r="2.5" />
-                        <circle cx="18.5" cy="18.5" r="2.5" />
-                    </svg>
+        <div class="col-md-4 animate-fade" style="animation-delay: 0.2s;">
+            <div class="feature-card border-0 shadow-sm">
+                <div class="feature-icon mx-auto p-3">
+                    <img src="{{ url_for('static', filename='truck_icon.png') }}" alt="Logistics"
+                        style="width: 48px; height: 48px;">
                 </div>
-                <h5>Daily Doorstep Delivery</h5>
-                <p>Choose morning or evening delivery. Order once or subscribe daily for hassle-free fresh milk at your
-                    door.</p>
+                <h5>Daily Logistics</h5>
+                <p>Fast and efficient. Our platform optimizes the route from farm to table, reducing transit time to
+                    hours instead of days.</p>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="feature-card">
-                <div class="feature-icon mx-auto">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
-                        <line x1="7" y1="7" x2="7.01" y2="7" />
-                    </svg>
+        <div class="col-md-4 animate-fade" style="animation-delay: 0.3s;">
+            <div class="feature-card border-0 shadow-sm">
+                <div class="feature-icon mx-auto p-3">
+                    <img src="{{ url_for('static', filename='cycle_icon.png') }}" alt="Sustainable"
+                        style="width: 48px; height: 48px;">
                 </div>
-                <h5>Value-Added Products</h5>
-                <p>Farmers convert unsold milk into paneer, butter, ghee, and cheese. Zero waste, maximum value.</p>
+                <h5>Sustainable Cycle</h5>
+                <p>Zero waste commitment. Excess milk is converted into premium dairy products like Paneer, Butter, and
+                    Ghee.</p>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Workflow -->
-<section class="section-grey">
-    <div class="container">
-        <h2 class="section-heading text-center" style="display:inline-block;margin:0 auto 2rem;width:100%;">
-            Platform Workflow
-        </h2>
-        <div class="row g-4">
-            <div class="col-md-3">
-                <div class="text-center">
-                    <div class="feature-icon mx-auto mb-3"
-                        style="width:48px;height:48px;background:#e8f5e9;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;">
-                        <strong class="text-green">1</strong>
+<!-- Platform Step-Through -->
+<section class="section-grey" style="padding: 8rem 0;">
+    <div class="container text-center animate-fade">
+        <h2 class="section-heading d-inline-block mb-5">Professional Workflow</h2>
+        <div class="row g-4 mt-4">
+            {% for step in [
+            {'n': '01', 't': 'Onboarding', 'd': 'Farmers and Consumers verify locations for proximity matching.'},
+            {'n': '02', 't': 'inventory', 'd': 'Real-time milk availability updated by farmers daily.'},
+            {'n': '03', 't': 'matching', 'd': 'Smart connection between customers and nearest supply.'},
+            {'n': '04', 't': 'Value-Add', 'd': 'Processing surplus into high-value dairy derivatives.'}
+            ] %}
+            <div class="col-6 col-md-3">
+                <div class="p-4 bg-white rounded-xl shadow-premium h-100 transition-all hover-up"
+                    style="border-radius: 20px;">
+                    <div class="text-green fw-bold mb-2"
+                        style="font-family: var(--font-heading); font-size: 0.8rem; letter-spacing: 0.2em;">{{ step.n }}
                     </div>
-                    <h6 style="font-weight:700;">Register</h6>
-                    <p class="text-muted" style="font-size:0.85rem;">Sign up as a farmer or consumer to get started.</p>
+                    <h6 class="fw-bold text-dark text-uppercase mb-3" style="font-size: 0.9rem;">{{ step.t }}</h6>
+                    <p class="x-small text-muted mb-0">{{ step.d }}</p>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="text-center">
-                    <div class="feature-icon mx-auto mb-3"
-                        style="width:48px;height:48px;background:#e8f5e9;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;">
-                        <strong class="text-green">2</strong>
-                    </div>
-                    <h6 style="font-weight:700;">List Milk</h6>
-                    <p class="text-muted" style="font-size:0.85rem;">Farmers add daily milk availability with pricing.
-                    </p>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="text-center">
-                    <div class="feature-icon mx-auto mb-3"
-                        style="width:48px;height:48px;background:#e8f5e9;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;">
-                        <strong class="text-green">3</strong>
-                    </div>
-                    <h6 style="font-weight:700;">Place Orders</h6>
-                    <p class="text-muted" style="font-size:0.85rem;">Consumers browse listings and order fresh milk.</p>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="text-center">
-                    <div class="feature-icon mx-auto mb-3"
-                        style="width:48px;height:48px;background:#e8f5e9;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;">
-                        <strong class="text-green">4</strong>
-                    </div>
-                    <h6 style="font-weight:700;">Value Products</h6>
-                    <p class="text-muted" style="font-size:0.85rem;">Unsold milk becomes paneer, butter, ghee, or
-                        cheese.</p>
-                </div>
-            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="container" style="padding: 6rem 0;">
+    <div class="bg-success p-5 rounded-xl shadow-premium text-center text-white position-relative overflow-hidden"
+        style="border-radius: 32px; background: linear-gradient(135deg, var(--p-600), var(--p-800)) !important;">
+        <div class="animate-fade position-relative z-1">
+            <h2 class="text-white fw-bold mb-4" style="font-size: 2.5rem;">Join the direct farm movement.</h2>
+            <p class="opacity-75 mb-5 mx-auto" style="max-width: 500px;">Save money for your home and earn more for your
+                farm by eliminating unnecessary supply chain layers.</p>
+            <a href="{{ url_for('register') }}"
+                class="btn btn-light btn-lg rounded-pill px-5 fw-bold text-success border-0">Get Started Now</a>
         </div>
     </div>
 </section>

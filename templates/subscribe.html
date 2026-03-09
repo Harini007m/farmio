@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% block title %}Subscribe to Milk - FarmIO{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="page-header border-0 pb-4">
+    <div class="container animate-fade">
+        <h2 class="mb-1 fw-bold display-6">Lifecycle Subscription</h2>
+        <p class="text-muted mb-0 lead small">21-Day continuity plan with <span class="text-green fw-bold">{{
+                farmer['farmer_name'] }}</span></p>
+    </div>
+</div>
+
+<div class="container pb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <div class="card border-0 shadow-premium animate-fade" style="border-radius: 24px;">
+                <div class="card-header bg-white border-bottom p-4">
+                    <h5 class="mb-0 fw-bold">Plan Configuration</h5>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    <div class="p-4 bg-primary-soft rounded-xl mb-5 border border-white">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <svg width="20" height="20" fill="var(--s-700)" viewBox="0 0 24 24">
+                                <path
+                                    d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z" />
+                            </svg>
+                            <h6 class="mb-0 fw-bold text-dark text-uppercase small letter-spacing-1">21-Day Premium
+                                Tenure</h6>
+                        </div>
+                        <p class="x-small text-muted mb-0">Subscription ensures daily reservation of your desired milk
+                            volume. No interruption, direct doorstep logistics included.</p>
+                    </div>
+
+                    <form method="POST">
+                        <div class="mb-4">
+                            <label for="start_date"
+                                class="form-label text-uppercase small fw-bold text-muted letter-spacing-1">Initiation
+                                Date</label>
+                            <input type="date" class="form-control bg-light border-0 py-3 fw-bold" id="start_date"
+                                name="start_date" min="{{ today }}" required>
+                        </div>
+
+                        <div class="mb-5">
+                            <label for="quantity"
+                                class="form-label text-uppercase small fw-bold text-muted letter-spacing-1">Daily
+                                Allocation</label>
+                            <select class="form-select bg-light border-0 py-3 fw-bold text-dark" id="quantity"
+                                name="quantity" required>
+                                <option value="0.5">0.5 Litres (Rs. 30/day)</option>
+                                <option value="1.0" selected>1.0 Litres (Rs. 60/day)</option>
+                                <option value="1.5">1.5 Litres (Rs. 90/day)</option>
+                                <option value="2.0">2.0 Litres (Rs. 120/day)</option>
+                                <option value="2.5">2.5 Litres (Rs. 150/day)</option>
+                                <option value="3.0">3.0 Litres (Rs. 180/day)</option>
+                            </select>
+
+                            <div
+                                class="mt-4 p-4 rounded-xl bg-green-light border d-flex justify-content-between align-items-center">
+                                <span class="x-small fw-bold text-green text-uppercase">Total Tenure Valuation</span>
+                                <h4 id="priceDisplay" class="mb-0 fw-bold text-green">Rs. 1260.00</h4>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-3">
+                            <button type="submit"
+                                class="btn btn-success btn-lg rounded-pill py-3 fw-bold shadow-premium">Activate &
+                                Subscribe</button>
+                            <a href="{{ url_for('consumer_dashboard') }}"
+                                class="btn btn-light rounded-pill py-3 fw-bold text-muted border-0">Return to
+                                Marketplace</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .letter-spacing-1 {
+        letter-spacing: 0.1em;
+    }
+
+    .x-small {
+        font-size: 0.75rem;
+    }
+
+    .bg-green-light {
+        background-color: #f0fdf4;
+    }
+
+    .bg-primary-soft {
+        background-color: #eff6ff;
+    }
+
+    .rounded-xl {
+        border-radius: 16px;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const quantitySelect = document.getElementById('quantity');
+        const priceDisplay = document.getElementById('priceDisplay');
+
+        function updatePrice() {
+            const qty = parseFloat(quantitySelect.value);
+            const dailyPrice = (qty / 0.5) * 30;
+            const total = dailyPrice * 21;
+            priceDisplay.textContent = `Rs. ${total.toFixed(2)}`;
+        }
+
+        quantitySelect.addEventListener('change', updatePrice);
+        updatePrice(); // Initial call
+    });
+</script>
+{% endblock %}

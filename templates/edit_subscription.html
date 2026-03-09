@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% block title %}Edit Subscription - FarmIO{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="page-header border-0 pb-4">
+    <div class="container animate-fade">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-2 small text-uppercase fw-bold letter-spacing-1">
+                <li class="breadcrumb-item"><a href="{{ url_for('consumer_subscriptions') }}"
+                        class="text-muted text-decoration-none">Subscriptions</a></li>
+                <li class="breadcrumb-item active" aria-current="page text-green">Plan Adjustment</li>
+            </ol>
+        </nav>
+        <h2 class="mb-1 fw-bold display-6">Adjust Your Agreement</h2>
+        <p class="text-muted mb-0 lead small">Reconfiguring tenure #{{ subscription['subscription_id'] }}</p>
+    </div>
+</div>
+
+<div class="container pb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <div class="card border-0 shadow-premium animate-fade" style="border-radius: 24px;">
+                <div class="card-header bg-white border-bottom p-4">
+                    <h5 class="mb-0 fw-bold">Live Configuration</h5>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    <form method="POST">
+                        <div class="mb-4">
+                            <label for="quantity"
+                                class="form-label text-uppercase small fw-bold text-muted letter-spacing-1">Daily
+                                Allocation Volume</label>
+                            <select class="form-select bg-light border-0 py-3 fw-bold text-dark" id="quantity"
+                                name="quantity" required>
+                                <option value="0.5" {% if subscription['quantity']==0.5 %}selected{% endif %}>0.5 Litres
+                                    (Rs. 30/day)</option>
+                                <option value="1.0" {% if subscription['quantity']==1.0 %}selected{% endif %}>1.0 Litres
+                                    (Rs. 60/day)</option>
+                                <option value="1.5" {% if subscription['quantity']==1.5 %}selected{% endif %}>1.5 Litres
+                                    (Rs. 90/day)</option>
+                                <option value="2.0" {% if subscription['quantity']==2.0 %}selected{% endif %}>2.0 Litres
+                                    (Rs. 120/day)</option>
+                                <option value="2.5" {% if subscription['quantity']==2.5 %}selected{% endif %}>2.5 Litres
+                                    (Rs. 150/day)</option>
+                                <option value="3.0" {% if subscription['quantity']==3.0 %}selected{% endif %}>3.0 Litres
+                                    (Rs. 180/day)</option>
+                            </select>
+
+                            <div
+                                class="mt-4 p-4 rounded-xl bg-green-light border d-flex justify-content-between align-items-center">
+                                <span class="x-small fw-bold text-green text-uppercase">Projected Value</span>
+                                <h4 id="priceDisplay" class="mb-0 fw-bold text-green">Rs. {{
+                                    "%.2f"|format(subscription['total_amount']) }}</h4>
+                            </div>
+                        </div>
+
+                        <div class="mb-5">
+                            <label for="status"
+                                class="form-label text-uppercase small fw-bold text-muted letter-spacing-1">Strategic
+                                Status</label>
+                            <select class="form-select bg-light border-0 py-3 fw-bold text-dark" id="status"
+                                name="status" required>
+                                <option value="active" {% if subscription['status']=='active' %}selected{% endif %}>
+                                    Active & Fulfilling</option>
+                                <option value="paused" {% if subscription['status']=='paused' %}selected{% endif %}>
+                                    Paused (Temporary Hold)</option>
+                                <option value="cancelled" {% if subscription['status']=='cancelled' %}selected{% endif
+                                    %}>Terminate Contract</option>
+                            </select>
+                            <div class="x-small text-muted mt-2">Pausing maintains your reservation slot but halts daily
+                                delivery.</div>
+                        </div>
+
+                        <div class="d-grid gap-3">
+                            <button type="submit"
+                                class="btn btn-success btn-lg rounded-pill py-3 fw-bold shadow-premium">Commit
+                                Changes</button>
+                            <a href="{{ url_for('consumer_subscriptions') }}"
+                                class="btn btn-light rounded-pill py-3 fw-bold text-muted border-0">Discard
+                                Modifications</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="mt-4 p-4 bg-light rounded-xl border border-white text-center">
+                <span class="x-small text-muted">Active Window: <strong>{{ subscription['start_date'] }}</strong> to
+                    <strong>{{ subscription['end_date'] }}</strong></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .letter-spacing-1 {
+        letter-spacing: 0.1em;
+    }
+
+    .x-small {
+        font-size: 0.75rem;
+    }
+
+    .bg-green-light {
+        background-color: #f0fdf4;
+    }
+
+    .rounded-xl {
+        border-radius: 16px;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const quantitySelect = document.getElementById('quantity');
+        const priceDisplay = document.getElementById('priceDisplay');
+
+        function updatePrice() {
+            const qty = parseFloat(quantitySelect.value);
+            const dailyPrice = (qty / 0.5) * 30;
+            const total = dailyPrice * 21;
+            priceDisplay.textContent = `Rs. ${total.toFixed(2)}`;
+        }
+
+        quantitySelect.addEventListener('change', updatePrice);
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% block title %}{% if role == 'farmer' %}Subscriptions (Farmer){% else %}My Subscriptions{% endif %} - FarmIO{%
+endblock %}
+
+{% block content %}
+<div class="page-header border-0 pb-4">
+    <div class="container animate-fade">
+        <h2 class="mb-1 fw-bold display-6">{% if role == 'farmer' %}Contractual Pipelines{% else %}My Milk Continuity{%
+            endif %}</h2>
+        <p class="text-muted mb-0 lead small">Managing 21-day auto-reservation agreements</p>
+    </div>
+</div>
+
+<div class="container pb-5">
+    <div class="card border-0 shadow-premium animate-fade" style="border-radius: 20px;">
+        <div class="card-header bg-white border-bottom p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold">Active Subscriptions</h5>
+                <span class="badge bg-green-light text-green rounded-pill px-3 py-2 small">Cycle: 21 Days</span>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            {% if subscriptions %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4">Sub ID</th>
+                            <th>{% if role == 'farmer' %}Consumer Participant{% else %}Dairy Provider{% endif %}</th>
+                            <th>Subscription Window</th>
+                            <th>Daily Allocation</th>
+                            <th>Contract Value</th>
+                            <th>Status</th>
+                            <th class="text-end pe-4">Operations</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sub in subscriptions %}
+                        <tr>
+                            <td class="ps-4 fw-bold text-muted small">#{{ sub['subscription_id'] }}</td>
+                            <td>
+                                {% if role == 'farmer' %}
+                                <div class="fw-bold text-dark">{{ sub['consumer_name'] }}</div>
+                                <div class="text-muted small">{{ sub['consumer_location'] }}</div>
+                                {% else %}
+                                <div class="fw-bold text-dark">{{ sub['farmer_name'] }}</div>
+                                <div class="text-muted small">{{ sub['farm_name'] }}</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="bg-light p-2 rounded-md d-inline-block text-center"
+                                    style="min-width: 140px; border: 1px solid var(--s-200);">
+                                    <div class="text-green fw-bold small">{{ sub['start_date'] }}</div>
+                                    <div class="text-muted x-small">thru {{ sub['end_date'] }}</div>
+                                </div>
+                            </td>
+                            <td class="fw-bold text-dark">{{ sub['quantity'] }} Litres/Day</td>
+                            <td class="fw-bold text-green">Rs. {{ "%.2f"|format(sub['total_amount']) }}</td>
+                            <td>
+                                <span class="badge-status {{ sub['status'] }}">{{ sub['status'] }}</span>
+                            </td>
+                            <td class="text-end pe-4">
+                                {% if role == 'consumer' %}
+                                <a href="{{ url_for('edit_subscription', subscription_id=sub['subscription_id']) }}"
+                                    class="btn btn-outline-success btn-sm rounded-pill px-4 fw-bold">
+                                    Manage Plan
+                                </a>
+                                {% else %}
+                                <span class="text-muted x-small">View Only</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="p-5 text-center text-muted">
+                <div class="mb-4 opacity-75">
+                    <img src="{{ url_for('static', filename='subscription_icon.png') }}" alt="No Subscriptions"
+                        style="width: 100px; height: auto;">
+                </div>
+                <h5 class="fw-bold">No High-Value Subscriptions</h5>
+                <p class="mb-4">Standardize your daily milk supply with a 21-day recurring plan.</p>
+                {% if role == 'consumer' %}
+                <a href="{{ url_for('consumer_dashboard') }}" class="btn btn-success rounded-pill px-4 btn-sm">Browse
+                    Verified Farmers</a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-green-light {
+        background: #d1fae5;
+    }
+
+    .x-small {
+        font-size: 0.7rem;
+    }
+
+    .rounded-md {
+        border-radius: 8px;
+    }
+</style>
+{% endblock %}
