@@ -59,12 +59,11 @@ def init_db():
             listing_id INTEGER PRIMARY KEY AUTOINCREMENT,
             farmer_id INTEGER NOT NULL,
             date TEXT NOT NULL,
-            morning_quantity REAL DEFAULT 0,
-            evening_quantity REAL DEFAULT 0,
+            total_quantity REAL DEFAULT 0,
             price_per_litre REAL NOT NULL,
             collection_time TEXT DEFAULT '',
             delivery_estimate TEXT DEFAULT '',
-            external_sold REAL DEFAULT 0,
+            is_closed INTEGER DEFAULT 0,
             FOREIGN KEY (farmer_id) REFERENCES farmers(farmer_id)
         );
 
@@ -74,7 +73,6 @@ def init_db():
             farmer_id INTEGER NOT NULL,
             listing_id INTEGER NOT NULL,
             quantity REAL NOT NULL,
-            delivery_time TEXT NOT NULL CHECK(delivery_time IN ('morning', 'evening')),
             order_date TEXT NOT NULL,
             status TEXT DEFAULT 'pending',
             FOREIGN KEY (consumer_id) REFERENCES users(user_id),
@@ -102,6 +100,21 @@ def init_db():
             status TEXT DEFAULT 'pending',
             FOREIGN KEY (consumer_id) REFERENCES users(user_id),
             FOREIGN KEY (product_id) REFERENCES products(product_id)
+        );
+
+        CREATE TABLE IF NOT EXISTS subscriptions (
+            subscription_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            consumer_id INTEGER NOT NULL,
+            farmer_id INTEGER NOT NULL,
+            start_date TEXT NOT NULL,
+            end_date TEXT NOT NULL,
+            quantity REAL NOT NULL,
+            price_per_day REAL NOT NULL,
+            total_amount REAL NOT NULL,
+            status TEXT DEFAULT 'active',
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (consumer_id) REFERENCES users(user_id),
+            FOREIGN KEY (farmer_id) REFERENCES farmers(farmer_id)
         );
     ''')
     db.commit()
@@ -278,9 +291,7 @@ def farmer_dashboard():
         (farmer_id, today)
     ).fetchall()
 
-    total_morning = sum(l['morning_quantity'] for l in today_listings)
-    total_evening = sum(l['evening_quantity'] for l in today_listings)
-    total_listed = total_morning + total_evening
+    total_listed = sum(l['total_quantity'] for l in today_listings)
 
     today_orders = db.execute('''
         SELECT o.*, u.name as consumer_name
@@ -291,8 +302,7 @@ def farmer_dashboard():
     ''', (farmer_id, today)).fetchall()
 
     total_ordered = sum(o['quantity'] for o in today_orders)
-    total_external = sum(l['external_sold'] for l in today_listings)
-    remaining = total_listed - total_ordered - total_external
+    remaining = total_listed - total_ordered
 
     all_orders = db.execute('''
         SELECT o.*, u.name as consumer_name, ml.date as listing_date
@@ -323,11 +333,8 @@ def farmer_dashboard():
                            farmer=farmer,
                            today_listings=today_listings,
                            total_listed=total_listed,
-                           total_morning=total_morning,
-                           total_evening=total_evening,
                            total_ordered=total_ordered,
-                           total_external=total_external,
-                           remaining=remaining,
+                           remaining=max(0, remaining),
                            today_orders=today_orders,
                            all_orders=all_orders,
                            products=products,
@@ -343,16 +350,13 @@ def add_milk():
     if request.method == 'POST':
         farmer_id = session.get('farmer_id')
         listing_date = request.form['date']
-        morning_qty = float(request.form.get('morning_quantity', 0) or 0)
-        evening_qty = float(request.form.get('evening_quantity', 0) or 0)
+        total_qty = float(request.form.get('total_quantity', 0) or 0)
         price = float(request.form['price_per_litre'])
         collection_time = request.form.get('collection_time', '').strip()
-        delivery_estimate = request.form.get('delivery_estimate', '').strip()
-
         db = get_db()
         db.execute(
-            'INSERT INTO milk_listings (farmer_id, date, morning_quantity, evening_quantity, price_per_litre, collection_time, delivery_estimate) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            (farmer_id, listing_date, morning_qty, evening_qty, price, collection_time, delivery_estimate)
+            'INSERT INTO milk_listings (farmer_id, date, total_quantity, price_per_litre, collection_time) VALUES (?, ?, ?, ?, ?)',
+            (farmer_id, listing_date, total_qty, price, collection_time)
         )
         db.commit()
         flash('Milk listing added successfully!', 'success')
@@ -361,11 +365,11 @@ def add_milk():
     return render_template('add_milk.html', today=str(date.today()))
 
 
-# ─── Routes: Mark milk as externally used ────────────────────────────────────────
-@app.route('/farmer/mark-milk-used/<int:listing_id>', methods=['POST'])
+# ─── Routes: Close today's sellings ──────────────────────────────────────────
+@app.route('/farmer/toggle-listing/<int:listing_id>', methods=['POST'])
 @login_required
 @farmer_required
-def mark_milk_used(listing_id):
+def toggle_listing(listing_id):
     db = get_db()
     farmer_id = session.get('farmer_id')
 
@@ -378,33 +382,14 @@ def mark_milk_used(listing_id):
         flash('Listing not found.', 'danger')
         return redirect(url_for('farmer_dashboard'))
 
-    qty_used = float(request.form.get('qty_used', 0) or 0)
-    reason = request.form.get('reason', '').strip() or 'External sale'
-
-    if qty_used <= 0:
-        flash('Please enter a valid quantity.', 'danger')
-        return redirect(url_for('farmer_dashboard'))
-
-    # Calculate how much is actually remaining on this listing
-    ordered = db.execute(
-        'SELECT COALESCE(SUM(quantity), 0) FROM orders WHERE listing_id = ?',
-        (listing_id,)
-    ).fetchone()[0]
-    total_milk = listing['morning_quantity'] + listing['evening_quantity']
-    current_external = listing['external_sold'] or 0
-    actual_remaining = total_milk - ordered - current_external
-
-    if qty_used > actual_remaining:
-        flash(f'Cannot mark {qty_used}L as used. Only {actual_remaining:.1f}L remaining.', 'danger')
-        return redirect(url_for('farmer_dashboard'))
-
-    new_external = current_external + qty_used
+    new_status = 1 if listing['is_closed'] == 0 else 0
     db.execute(
-        'UPDATE milk_listings SET external_sold = ? WHERE listing_id = ?',
-        (new_external, listing_id)
+        'UPDATE milk_listings SET is_closed = ? WHERE listing_id = ?',
+        (new_status, listing_id)
     )
     db.commit()
-    flash(f'{qty_used:.1f}L marked as used ({reason}). Remaining updated.', 'success')
+    msg = "Selling CLOSED for this listing." if new_status == 1 else "Selling RE-OPENED for this listing."
+    flash(msg, 'info')
     return redirect(url_for('farmer_dashboard'))
 
 
@@ -529,29 +514,26 @@ def consumer_dashboard():
 
     farmers = db.execute('''
         SELECT f.*, u.name as farmer_name, u.latitude as farmer_lat, u.longitude as farmer_lng,
-        (SELECT SUM(ml.morning_quantity + ml.evening_quantity)
+        (SELECT SUM(ml.total_quantity)
          FROM milk_listings ml WHERE ml.farmer_id = f.farmer_id AND ml.date = ?) as total_available,
         (SELECT COALESCE(SUM(o.quantity), 0)
          FROM orders o WHERE o.farmer_id = f.farmer_id
-         AND o.order_date = ?) as total_ordered,
-        (SELECT COALESCE(SUM(ml2.external_sold), 0)
-         FROM milk_listings ml2 WHERE ml2.farmer_id = f.farmer_id AND ml2.date = ?) as total_external
+         AND o.order_date = ?) as total_ordered
         FROM farmers f
         JOIN users u ON f.user_id = u.user_id
-    ''', (today, today, today)).fetchall()
+    ''', (today, today)).fetchall()
 
     # Get freshness info for today's listings per farmer
     freshness_map = {}
     all_listings = db.execute('''
-        SELECT farmer_id, collection_time, delivery_estimate
-        FROM milk_listings WHERE date = ? AND (collection_time != '' OR delivery_estimate != '')
+        SELECT farmer_id, collection_time
+        FROM milk_listings WHERE date = ? AND collection_time != ''
         ORDER BY listing_id DESC
     ''', (today,)).fetchall()
     for fl in all_listings:
         if fl['farmer_id'] not in freshness_map:
             freshness_map[fl['farmer_id']] = {
-                'collection_time': fl['collection_time'],
-                'delivery_estimate': fl['delivery_estimate']
+                'collection_time': fl['collection_time']
             }
 
     farmer_list = []
@@ -565,26 +547,32 @@ def consumer_dashboard():
         else:
             dist = 0  # If coordinates missing, show by default
 
-        # Only include farmers within the max distance
+        # Only include farmers within the max distance and NOT closed
         if dist <= max_distance_km or consumer_lat == 0 or farmer_lat == 0:
             total_avail = f['total_available'] or 0
             total_ord = f['total_ordered'] or 0
-            total_ext = f['total_external'] or 0
-            remaining = total_avail - total_ord - total_ext
-            freshness = freshness_map.get(f['farmer_id'], {})
-            farmer_list.append({
-                'farmer_id': f['farmer_id'],
-                'farmer_name': f['farmer_name'],
-                'farm_name': f['farm_name'],
-                'location': f['location'],
-                'milk_capacity_per_day': f['milk_capacity_per_day'],
-                'price_per_litre': f['price_per_litre'],
-                'total_available': total_avail,
-                'remaining': max(0, remaining),
-                'distance_km': round(dist, 1),
-                'collection_time': freshness.get('collection_time', ''),
-                'delivery_estimate': freshness.get('delivery_estimate', '')
-            })
+            remaining = total_avail - total_ord
+            
+            # Check if farmer has any open listing for today
+            is_closed = db.execute(
+                'SELECT is_closed FROM milk_listings WHERE farmer_id = ? AND date = ?',
+                (f['farmer_id'], today)
+            ).fetchone()
+            
+            if not is_closed or is_closed['is_closed'] == 0:
+                freshness = freshness_map.get(f['farmer_id'], {})
+                farmer_list.append({
+                    'farmer_id': f['farmer_id'],
+                    'farmer_name': f['farmer_name'],
+                    'farm_name': f['farm_name'],
+                    'location': f['location'],
+                    'milk_capacity_per_day': f['milk_capacity_per_day'],
+                    'price_per_litre': f['price_per_litre'],
+                    'total_available': total_avail,
+                    'remaining': max(0, remaining),
+                    'distance_km': round(dist, 1),
+                    'collection_time': freshness.get('collection_time', '')
+                })
 
     # Sort by distance (nearest first)
     farmer_list.sort(key=lambda x: x['distance_km'])
@@ -627,14 +615,18 @@ def place_order(farmer_id):
         return redirect(url_for('consumer_dashboard'))
 
     listings = db.execute(
-        'SELECT * FROM milk_listings WHERE farmer_id = ? AND date = ?',
+        'SELECT * FROM milk_listings WHERE farmer_id = ? AND date >= ? ORDER BY date ASC',
         (farmer_id, today)
     ).fetchall()
 
     if request.method == 'POST':
-        listing_id = int(request.form['listing_id'])
+        listing_id_str = request.form.get('listing_id', '')
+        if not listing_id_str:
+            flash('Please select a delivery date first.', 'warning')
+            return redirect(url_for('place_order', farmer_id=farmer_id))
+            
+        listing_id = int(listing_id_str)
         quantity = float(request.form['quantity'])
-        delivery_time = request.form['delivery_time']
 
         listing = db.execute(
             'SELECT * FROM milk_listings WHERE listing_id = ?', (listing_id,)
@@ -643,18 +635,17 @@ def place_order(farmer_id):
         if not listing:
             flash('Listing not found.', 'danger')
             return redirect(url_for('place_order', farmer_id=farmer_id))
+            
+        if listing['is_closed']:
+            flash('This listing is now closed for orders.', 'warning')
+            return redirect(url_for('consumer_dashboard'))
 
         ordered_already = db.execute(
             'SELECT COALESCE(SUM(quantity), 0) FROM orders WHERE listing_id = ?',
             (listing_id,)
         ).fetchone()[0]
 
-        if delivery_time == 'morning':
-            available = listing['morning_quantity'] - ordered_already
-        else:
-            available = listing['evening_quantity'] - ordered_already
-
-        total_available = (listing['morning_quantity'] + listing['evening_quantity']) - ordered_already
+        total_available = listing['total_quantity'] - ordered_already
 
         if quantity <= 0:
             flash('Please enter a valid quantity.', 'danger')
@@ -662,12 +653,12 @@ def place_order(farmer_id):
             flash(f'Not enough milk available. Only {total_available:.1f} litres remaining.', 'danger')
         else:
             db.execute(
-                'INSERT INTO orders (consumer_id, farmer_id, listing_id, quantity, delivery_time, order_date, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                (session['user_id'], farmer_id, listing_id, quantity, delivery_time, today, 'pending')
+                'INSERT INTO orders (consumer_id, farmer_id, listing_id, quantity, order_date, status) VALUES (?, ?, ?, ?, ?, ?)',
+                (session['user_id'], farmer_id, listing_id, quantity, listing['date'], 'pending')
             )
             db.commit()
             total_price = quantity * listing['price_per_litre']
-            flash(f'Order placed successfully! {quantity:.1f}L for Rs. {total_price:.2f}', 'success')
+            flash(f'Order placed successfully for {listing["date"]}! {quantity:.1f}L for Rs. {total_price:.2f}', 'success')
             return redirect(url_for('consumer_dashboard'))
 
     listing_data = []
@@ -676,17 +667,15 @@ def place_order(farmer_id):
             'SELECT COALESCE(SUM(quantity), 0) FROM orders WHERE listing_id = ?',
             (l['listing_id'],)
         ).fetchone()[0]
-        external = l['external_sold'] or 0
-        remaining = (l['morning_quantity'] + l['evening_quantity']) - ordered - external
+        remaining = l['total_quantity'] - ordered
         listing_data.append({
             'listing_id': l['listing_id'],
             'date': l['date'],
-            'morning_quantity': l['morning_quantity'],
-            'evening_quantity': l['evening_quantity'],
+            'total_quantity': l['total_quantity'],
             'price_per_litre': l['price_per_litre'],
             'remaining': max(0, remaining),
-            'collection_time': l['collection_time'] or '',
-            'delivery_estimate': l['delivery_estimate'] or ''
+            'is_closed': l['is_closed'],
+            'collection_time': l['collection_time'] or ''
         })
 
     return render_template('place_order.html',
@@ -726,6 +715,114 @@ def consumer_orders():
                            orders=orders,
                            product_orders=product_orders,
                            role='consumer')
+
+
+# ─── Routes: Milk Subscription ──────────────────────────────────────────────────
+@app.route('/consumer/subscribe/<int:farmer_id>', methods=['GET', 'POST'])
+@login_required
+@consumer_required
+def subscribe(farmer_id):
+    db = get_db()
+    farmer = db.execute('''
+        SELECT f.*, u.name as farmer_name
+        FROM farmers f JOIN users u ON f.user_id = u.user_id
+        WHERE f.farmer_id = ?
+    ''', (farmer_id,)).fetchone()
+
+    if not farmer:
+        flash('Farmer not found.', 'danger')
+        return redirect(url_for('consumer_dashboard'))
+
+    if request.method == 'POST':
+        start_date_str = request.form['start_date']
+        quantity = float(request.form['quantity'])  # Quantity in Litres
+        
+        # Calculate end date (21 days later)
+        start_date_dt = datetime.strptime(start_date_str, '%Y-%m-%d')
+        from datetime import timedelta
+        end_date_dt = start_date_dt + timedelta(days=20) # 21 days total inclusive
+        end_date_str = end_date_dt.strftime('%Y-%m-%d')
+        
+        price_per_500ml = 30.0 # Fixed as per requirement
+        price_per_litre = price_per_500ml * 2
+        price_per_day = quantity * price_per_litre
+        total_amount = price_per_day * 21
+        
+        db.execute('''
+            INSERT INTO subscriptions (consumer_id, farmer_id, start_date, end_date, quantity, price_per_day, total_amount, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (session['user_id'], farmer_id, start_date_str, end_date_str, quantity, price_per_day, total_amount, 'active'))
+        db.commit()
+        
+        flash(f'Subscription successful! 21 days supply starting {start_date_str}. Total: Rs. {total_amount:.2f}', 'success')
+        return redirect(url_for('consumer_subscriptions'))
+
+    return render_template('subscribe.html', farmer=farmer, today=str(date.today()))
+
+
+@app.route('/consumer/subscriptions')
+@login_required
+@consumer_required
+def consumer_subscriptions():
+    db = get_db()
+    subscriptions = db.execute('''
+        SELECT s.*, f.farm_name, u.name as farmer_name
+        FROM subscriptions s
+        JOIN farmers f ON s.farmer_id = f.farmer_id
+        JOIN users u ON f.user_id = u.user_id
+        WHERE s.consumer_id = ?
+        ORDER BY s.subscription_id DESC
+    ''', (session['user_id'],)).fetchall()
+    
+    return render_template('subscriptions.html', subscriptions=subscriptions, role='consumer')
+
+
+@app.route('/consumer/edit-subscription/<int:subscription_id>', methods=['GET', 'POST'])
+@login_required
+@consumer_required
+def edit_subscription(subscription_id):
+    db = get_db()
+    sub = db.execute('SELECT * FROM subscriptions WHERE subscription_id = ? AND consumer_id = ?', 
+                    (subscription_id, session['user_id'])).fetchone()
+    
+    if not sub:
+        flash('Subscription not found.', 'danger')
+        return redirect(url_for('consumer_subscriptions'))
+    
+    if request.method == 'POST':
+        quantity = float(request.form['quantity'])
+        status = request.form['status']
+        
+        price_per_500ml = 30.0
+        price_per_litre = price_per_500ml * 2
+        price_per_day = quantity * price_per_litre
+        
+        db.execute('''
+            UPDATE subscriptions 
+            SET quantity = ?, status = ?
+            WHERE subscription_id = ?
+        ''', (quantity, status, subscription_id))
+        db.commit()
+        flash('Subscription updated.', 'success')
+        return redirect(url_for('consumer_subscriptions'))
+        
+    return render_template('edit_subscription.html', subscription=sub)
+
+
+@app.route('/farmer/subscriptions')
+@login_required
+@farmer_required
+def farmer_subscriptions():
+    db = get_db()
+    subscriptions = db.execute('''
+        SELECT s.*, u.name as consumer_name, u.location as consumer_location
+        FROM subscriptions s
+        JOIN users u ON s.consumer_id = u.user_id
+        WHERE s.farmer_id = ?
+        ORDER BY s.start_date ASC
+    ''', (session['farmer_id'],)).fetchall()
+    
+    return render_template('subscriptions.html', subscriptions=subscriptions, role='farmer')
 
 
 # ─── Routes: Consumer products ──────────────────────────────────────────────────

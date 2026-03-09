@@ -3,153 +3,204 @@
 
 {% block content %}
 <!-- Page Header -->
-<div class="page-header">
-    <div class="container">
-        <h2>Consumer Dashboard</h2>
-        <p>Browse local farmers and order fresh milk - {{ today }}
-            {% if user_location %} | Your area: {{ user_location }}{% endif %}
+<div class="page-header border-0 pb-4">
+    <div class="container animate-fade">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-2 small text-uppercase fw-bold letter-spacing-1">
+                <li class="breadcrumb-item"><a href="{{ url_for('index') }}"
+                        class="text-muted text-decoration-none">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page text-green">Marketplace</li>
+            </ol>
+        </nav>
+        <h2 class="mb-1 fw-bold display-6">Farm Direct Marketplace</h2>
+        <p class="text-muted mb-0 lead small">
+            Fresh milk from local farmers in <span class="text-green fw-bold">{{ user_location or 'your area' }}</span>
         </p>
     </div>
 </div>
 
-<div class="container content-wrapper">
-
-    <!-- Location radius info -->
-    <div class="alert alert-info d-flex align-items-center mb-4" role="alert" style="border:1px solid #bbdefb;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-            stroke-linejoin="round" style="width:20px;height:20px;margin-right:10px;flex-shrink:0;color:#1565c0;">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-            <circle cx="12" cy="10" r="3" />
-        </svg>
-        <span>Showing farmers within <strong>{{ max_distance }} km</strong> of your location.
-            {% if not farmers %}No farmers found nearby. Try registering from a different area.{% endif %}</span>
+<div class="container pb-5">
+    <!-- Location Context -->
+    <div class="bg-white border p-3 rounded-xl shadow-sm d-flex align-items-center mb-5 animate-fade"
+        style="border-radius: 16px; animation-delay: 0.1s;">
+        <div class="bg-primary-soft text-primary p-2 rounded-circle me-3" style="background:#eff6ff;">
+            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                <path
+                    d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+            </svg>
+        </div>
+        <div class="flex-grow-1">
+            <p class="mb-0 small fw-bold text-dark">Farmers within {{ max_distance }} km</p>
+            <p class="mb-0 x-small text-muted">Showing results tailored to your current GPS coordinates.</p>
+        </div>
+        {% if not farmers %}
+        <span class="badge bg-warning-soft text-warning rounded-pill px-3">No Results</span>
+        {% endif %}
     </div>
 
-    <!-- Available Farmers -->
-    <h4 class="section-heading">Nearby Farmers</h4>
+    <!-- Marketplace Section -->
+    <div class="animate-fade" style="animation-delay: 0.2s;">
+        <div class="d-flex justify-content-between align-items-end mb-4">
+            <h4 class="fw-bold mb-0">Verified Local Farmers</h4>
+            <a href="{{ url_for('consumer_dashboard') }}"
+                class="small text-green fw-bold text-decoration-none transition-all hover-translate-x">Refresh Feed
+                →</a>
+        </div>
 
-    {% if farmers %}
-    <div class="row g-4 mb-4">
-        {% for farmer in farmers %}
-        <div class="col-lg-4 col-md-6">
-            <div class="farmer-card">
-                <div class="farmer-header">
-                    <div class="farmer-avatar">
-                        {{ farmer['farmer_name'][0]|upper }}
+        {% if farmers %}
+        <div class="row g-4 mb-5">
+            {% for farmer in farmers %}
+            <div class="col-lg-4 col-md-6">
+                <div class="card h-100 border-0 shadow-premium transition-all hover-up overflow-hidden"
+                    style="border-radius: 20px;">
+                    <!-- Farmer Visual Header -->
+                    <div class="p-4 bg-light border-bottom position-relative">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="bg-white rounded-xl shadow-sm p-1" style="border-radius: 12px;">
+                                <div class="bg-green-light fw-bold text-green d-flex align-items-center justify-content-center"
+                                    style="width: 50px; height:50px; border-radius: 8px; font-size: 1.25rem;">
+                                    {{ farmer['farmer_name'][0]|upper }}
+                                </div>
+                            </div>
+                            <div>
+                                <h6 class="mb-0 fw-bold text-dark">{{ farmer['farmer_name'] }}</h6>
+                                <p class="mb-0 x-small text-muted">{{ farmer['farm_name'] }}</p>
+                            </div>
+                        </div>
+                        <div class="position-absolute top-0 end-0 p-3">
+                            <span class="badge bg-white shadow-sm text-green rounded-pill px-2 py-1 x-small fw-bold">
+                                {{ farmer['distance_km'] if farmer['distance_km'] > 0 else '0' }} km
+                            </span>
+                        </div>
                     </div>
-                    <div>
-                        <p class="farmer-name">{{ farmer['farmer_name'] }}</p>
-                        <p class="farmer-farm">{{ farmer['farm_name'] }}</p>
-                    </div>
-                </div>
-                <div class="farmer-details">
-                    <div class="detail-row">
-                        <span class="detail-label">Location</span>
-                        <span class="detail-value">{{ farmer['location'] }}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Distance</span>
-                        <span class="detail-value" style="color:#388e3c;font-weight:700;">
-                            {% if farmer['distance_km'] > 0 %}
-                            {{ farmer['distance_km'] }} km away
-                            {% else %}
-                            Same area
+
+                    <div class="card-body p-4">
+                        <div class="vstack gap-3 mb-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted small">Daily Availability</span>
+                                <span class="fw-bold text-dark">{{ farmer['remaining'] }} Litres</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted small">Unit Price</span>
+                                <span class="fw-bold text-green">Rs. {{ farmer['price_per_litre'] }}/L</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted small">Collection Point</span>
+                                <span class="text-dark small text-truncate ms-3 fw-medium">{{ farmer['location']
+                                    }}</span>
+                            </div>
+                            {% if farmer['collection_time'] %}
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted small">Batch Time</span>
+                                <span class="badge bg-primary-soft text-primary rounded-pill small fw-bold px-2 py-1">{{
+                                    farmer['collection_time'] }}</span>
+                            </div>
                             {% endif %}
-                        </span>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('place_order', farmer_id=farmer['farmer_id']) }}"
+                                class="btn btn-success border-0 shadow-sm rounded-pill fw-bold">Instant Order</a>
+                            <a href="{{ url_for('subscribe', farmer_id=farmer['farmer_id']) }}"
+                                class="btn btn-outline-success border-2 rounded-pill fw-bold">Subscribe (21 Days)</a>
+                        </div>
                     </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Available Today</span>
-                        <span class="detail-value available">{{ farmer['remaining'] }} L</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="card border-0 shadow-premium p-5 text-center" style="border-radius: 20px;">
+            <div class="mb-4 opacity-75">
+                <img src="{{ url_for('static', filename='empty_range.png') }}" alt="No Farmers Nearby"
+                    style="width: 120px; height: auto;">
+            </div>
+            <h5 class="fw-bold text-dark">No Farmers in Range</h5>
+            <p class="text-muted mx-auto mb-4" style="max-width: 400px;">We couldn't find any milk listings within {{
+                max_distance }} km of your location. Try expanding your search area in profile settings.</p>
+            <a href="{{ url_for('consumer_dashboard') }}" class="btn btn-light rounded-pill px-4">Check for Updates</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Secondary Management Grid -->
+    <div class="row g-4 animate-fade" style="animation-delay: 0.3s;">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-premium mb-4 overflow-hidden" style="border-radius: 20px;">
+                <div class="card-header bg-white border-bottom p-4">
+                    <h5 class="mb-0 fw-bold">Recent Order Activity</h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if my_orders %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 align-middle">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4">Order #</th>
+                                    <th>Farm / Source</th>
+                                    <th>Qty</th>
+                                    <th>Amount</th>
+                                    <th class="text-end pe-4">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in my_orders %}
+                                <tr>
+                                    <td class="ps-4 text-muted small">#{{ order['order_id'] }}</td>
+                                    <td class="fw-bold text-dark">{{ order['farm_name'] }}</td>
+                                    <td>{{ order['quantity'] }} L</td>
+                                    <td class="fw-bold text-dark">Rs. {{ "%.2f"|format(order['quantity'] *
+                                        order['price_per_litre']) }}</td>
+                                    <td class="text-end pe-4">
+                                        <span class="badge-status {{ order['status'] }}">{{ order['status'] }}</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Price</span>
-                        <span class="detail-value">Rs. {{ farmer['price_per_litre'] }}/L</span>
-                    </div>
-                    {% if farmer['collection_time'] %}
-                    <div class="detail-row">
-                        <span class="detail-label">Collection Time</span>
-                        <span class="detail-value" style="color:#388e3c;">{{ farmer['collection_time'] }}</span>
-                    </div>
-                    {% endif %}
-                    {% if farmer['delivery_estimate'] %}
-                    <div class="detail-row">
-                        <span class="detail-label">Delivery By</span>
-                        <span class="detail-value" style="color:#388e3c;">{{ farmer['delivery_estimate'] }}</span>
-                    </div>
+                    {% else %}
+                    <div class="p-5 text-center text-muted small">No recent orders. Time to fresh up!</div>
                     {% endif %}
                 </div>
-                <a href="{{ url_for('place_order', farmer_id=farmer['farmer_id']) }}" class="btn btn-success btn-order">
-                    Order Milk
-                </a>
             </div>
         </div>
-        {% endfor %}
-    </div>
-    {% else %}
-    <div class="card mb-4">
-        <div class="card-body">
-            <div class="empty-state">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                    stroke-linejoin="round">
-                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                    <circle cx="12" cy="10" r="3" />
-                </svg>
-                <h5>No Nearby Farmers</h5>
-                <p>No farmers are registered within {{ max_distance }} km of your location. Check back later as more
-                    farmers join the platform!</p>
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-premium p-4 h-100"
+                style="border-radius: 20px; background: linear-gradient(135deg, var(--p-700), var(--p-900)) !important;">
+                <h5 class="text-white fw-bold mb-3">Explore More</h5>
+                <p class="text-white opacity-75 small mb-4">Discover premium dairy products made with the same farm
+                    fresh milk.</p>
+                <div class="vstack gap-2">
+                    <a href="{{ url_for('consumer_products') }}"
+                        class="btn btn-light rounded-pill fw-bold text-green w-100 py-3">Browse Dairy Products</a>
+                    <a href="{{ url_for('consumer_subscriptions') }}"
+                        class="btn btn-outline-light border-0 rounded-pill fw-bold w-100 py-3">My Subscriptions</a>
+                </div>
             </div>
         </div>
     </div>
-    {% endif %}
-
-    <!-- Quick Links -->
-    <div class="row g-3 mb-4">
-        <div class="col-md-4 col-12">
-            <a href="{{ url_for('consumer_orders') }}" class="btn btn-outline-success w-100">View Order History</a>
-        </div>
-        <div class="col-md-4 col-6">
-            <a href="{{ url_for('consumer_products') }}" class="btn btn-outline-success w-100">Browse Dairy Products</a>
-        </div>
-        <div class="col-md-4 col-6">
-            <a href="{{ url_for('consumer_dashboard') }}" class="btn btn-outline-secondary w-100">Refresh</a>
-        </div>
-    </div>
-
-    <!-- Recent Orders -->
-    {% if my_orders %}
-    <div class="card">
-        <div class="card-header">
-            Your Recent Orders
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Order #</th>
-                            <th>Farm</th>
-                            <th>Qty (L)</th>
-                            <th>Delivery</th>
-                            <th>Total</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for order in my_orders %}
-                        <tr>
-                            <td>#{{ order['order_id'] }}</td>
-                            <td>{{ order['farm_name'] }}</td>
-                            <td>{{ order['quantity'] }}</td>
-                            <td style="text-transform:capitalize;">{{ order['delivery_time'] }}</td>
-                            <td>Rs. {{ "%.2f"|format(order['quantity'] * order['price_per_litre']) }}</td>
-                            <td><span class="badge-status {{ order['status'] }}">{{ order['status'] }}</span></td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-    {% endif %}
 </div>
+
+<style>
+    .bg-primary-soft {
+        background: #eff6ff;
+    }
+
+    .bg-warning-soft {
+        background: #fffbeb;
+    }
+
+    .x-small {
+        font-size: 0.7rem;
+    }
+
+    .rounded-xl {
+        border-radius: 12px;
+    }
+
+    .hover-translate-x:hover {
+        transform: translateX(5px);
+    }
+</style>
 {% endblock %}
