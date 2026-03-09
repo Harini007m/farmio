@@ -9,18 +9,18 @@
             <ol class="breadcrumb mb-2 small text-uppercase fw-bold letter-spacing-1">
                 <li class="breadcrumb-item"><a href="{{ url_for('index') }}"
                         class="text-muted text-decoration-none">Home</a></li>
-                <li class="breadcrumb-item active" aria-current="page text-green">Farmer Portal</li>
+                <li class="breadcrumb-item active text-primary" aria-current="page">Farmer Portal</li>
             </ol>
         </nav>
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3">
             <div>
                 <h2 class="mb-1 fw-bold display-6">Farmer Dashboard</h2>
-                <p class="text-muted mb-0 lead small">Management console for <span class="text-green fw-bold">{{
+                <p class="text-muted mb-0 lead small">Management console for <span class="text-primary fw-bold">{{
                         farmer['farm_name'] }}</span></p>
             </div>
             <div class="d-flex gap-2">
                 <a href="{{ url_for('add_milk') }}"
-                    class="btn btn-success rounded-pill px-4 btn-sm fw-bold shadow-premium">+ List New Milk</a>
+                    class="btn btn-primary rounded-pill px-4 btn-sm fw-bold shadow-premium">+ List New Milk</a>
             </div>
         </div>
     </div>
@@ -32,48 +32,65 @@
         <div class="col-lg-3 col-md-6">
             <div class="summary-card border-0 shadow-premium h-100 transition-all hover-up">
                 <div class="summary-icon green">
-                    <img src="{{ url_for('static', filename='cow_icon.png') }}" alt="Production"
-                        style="width: 28px; height: 28px; filter: brightness(1.1);">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m7.5 4.27 9 5.15"></path>
+                        <path
+                            d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z">
+                        </path>
+                        <path d="m3.3 7 8.7 5 8.7-5"></path>
+                        <path d="M12 22V12"></path>
+                    </svg>
                 </div>
                 <div class="summary-info">
                     <h3 class="fw-bold mb-0 text-dark">{{ total_listed }} L</h3>
-                    <p class="text-muted x-small mb-0">Total Listed</p>
+                    <p class="text-muted x-small mb-0 fw-semibold text-uppercase letter-spacing-1">Total Listed</p>
                 </div>
             </div>
         </div>
         <div class="col-lg-3 col-md-6">
             <div class="summary-card border-0 shadow-premium h-100 transition-all hover-up">
                 <div class="summary-icon blue">
-                    <img src="{{ url_for('static', filename='money_icon.png') }}" alt="Sales"
-                        style="width: 28px; height: 28px;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="1" x2="12" y2="23"></line>
+                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                    </svg>
                 </div>
                 <div class="summary-info">
                     <h3 class="fw-bold mb-0 text-dark">{{ total_ordered }} L</h3>
-                    <p class="text-muted x-small mb-0">Total Sold</p>
+                    <p class="text-muted x-small mb-0 fw-semibold text-uppercase letter-spacing-1">Total Sold</p>
                 </div>
             </div>
         </div>
         <div class="col-lg-3 col-md-6">
             <div class="summary-card border-0 shadow-premium h-100 transition-all hover-up">
                 <div class="summary-icon orange">
-                    <img src="{{ url_for('static', filename='milk.png') }}" alt="Stock"
-                        style="width: 24px; height: 24px; object-fit: contain;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 10V4a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6h18Z"></path>
+                        <path d="M3 10v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V10"></path>
+                    </svg>
                 </div>
                 <div class="summary-info">
                     <h3 class="fw-bold mb-0 text-dark">{{ remaining }} L</h3>
-                    <p class="text-muted x-small mb-0">On Shelf</p>
+                    <p class="text-muted x-small mb-0 fw-semibold text-uppercase letter-spacing-1">On Shelf</p>
                 </div>
             </div>
         </div>
         <div class="col-lg-3 col-md-6">
             <div class="summary-card border-0 shadow-premium h-100 transition-all hover-up">
                 <div class="summary-icon red">
-                    <img src="{{ url_for('static', filename='package_icon.png') }}" alt="Orders"
-                        style="width: 28px; height: 28px;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+                        <path d="M3 6h18"></path>
+                        <path d="M16 10a4 4 0 0 1-8 0"></path>
+                    </svg>
                 </div>
                 <div class="summary-info">
                     <h3 class="fw-bold mb-0 text-dark">{{ today_orders|length }}</h3>
-                    <p class="text-muted x-small mb-0">Active Orders</p>
+                    <p class="text-muted x-small mb-0 fw-semibold text-uppercase letter-spacing-1">Active Orders</p>
                 </div>
             </div>
         </div>
@@ -108,10 +125,14 @@
                                 <tr>
                                     <td class="ps-4">
                                         <div class="d-flex align-items-center gap-3">
-                                            <div class="bg-green-light p-1 rounded-circle border"
-                                                style="width: 44px; height:44px; display: flex; align-items: center; justify-content: center; overflow: hidden; background: white;">
-                                                <img src="{{ url_for('static', filename='milk.png') }}" alt="Milk"
-                                                    style="width: 32px; height: 32px; object-fit: contain;">
+                                            <div class="bg-primary-soft p-1 rounded-circle border"
+                                                style="width: 44px; height:44px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                                    stroke="var(--p-600)" stroke-width="2" stroke-linecap="round"
+                                                    stroke-linejoin="round">
+                                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"></path>
+                                                    <path d="m9 12 2 2 4-4"></path>
+                                                </svg>
                                             </div>
                                             <div>
                                                 <div class="fw-bold text-dark">{{ listing['total_quantity'] }} Litres
@@ -128,15 +149,14 @@
                                             class="badge bg-danger-soft text-danger px-3 py-2 rounded-pill small fw-bold">Closed</span>
                                         {% else %}
                                         <span
-                                            class="badge bg-success-soft text-success px-3 py-2 rounded-pill small fw-bold">Live
-                                            & Selling</span>
+                                            class="badge bg-primary-soft text-primary px-3 py-2 rounded-pill small fw-bold">Live</span>
                                         {% endif %}
                                     </td>
                                     <td class="text-end pe-4">
                                         <form method="POST"
                                             action="{{ url_for('toggle_listing', listing_id=listing['listing_id']) }}">
                                             <button type="submit"
-                                                class="btn {% if listing['is_closed'] %}btn-outline-success{% else %}btn-outline-danger{% endif %} btn-sm rounded-pill px-4 fw-bold">
+                                                class="btn {% if listing['is_closed'] %}btn-outline-primary{% else %}btn-outline-danger{% endif %} btn-sm rounded-pill px-4 fw-bold">
                                                 {% if listing['is_closed'] %}Open Inventory{% else %}Stop Selling{%
                                                 endif %}
                                             </button>
@@ -149,9 +169,19 @@
                     </div>
                     {% else %}
                     <div class="p-5 text-center">
-                        <div class="display-6 opacity-25 mb-3">🧺</div>
+                        <div class="display-6 text-muted opacity-25 mb-3">
+                            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m7.5 4.27 9 5.15"></path>
+                                <path
+                                    d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z">
+                                </path>
+                                <path d="m3.3 7 8.7 5 8.7-5"></path>
+                                <path d="M12 22V12"></path>
+                            </svg>
+                        </div>
                         <p class="text-muted">No milk listings found for today.</p>
-                        <a href="{{ url_for('add_milk') }}" class="btn btn-success rounded-pill px-4 btn-sm">Create
+                        <a href="{{ url_for('add_milk') }}" class="btn btn-primary rounded-pill px-4 btn-sm">Create
                             First Listing</a>
                     </div>
                     {% endif %}
@@ -247,7 +277,7 @@
                         <div class="col-6">
                             <div class="bg-light p-3 rounded-md text-center">
                                 <div class="fw-bold text-dark small text-truncate">{{ product['product_name'] }}</div>
-                                <div class="text-green fw-bold small">Rs. {{ product['price'] }}</div>
+                                <div class="text-primary fw-bold small">Rs. {{ product['price'] }}</div>
                                 <div class="text-muted" style="font-size: 0.65rem;">Stock: {{ product['quantity'] }}
                                 </div>
                             </div>
@@ -256,7 +286,7 @@
                     </div>
                     <div class="mt-4">
                         <a href="{{ url_for('farmer_products') }}"
-                            class="btn btn-outline-success btn-sm w-100 rounded-pill">Manage All Products</a>
+                            class="btn btn-outline-primary btn-sm w-100 rounded-pill">Manage All Products</a>
                     </div>
                 </div>
             </div>

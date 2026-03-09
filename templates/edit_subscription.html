@@ -9,7 +9,7 @@
             <ol class="breadcrumb mb-2 small text-uppercase fw-bold letter-spacing-1">
                 <li class="breadcrumb-item"><a href="{{ url_for('consumer_subscriptions') }}"
                         class="text-muted text-decoration-none">Subscriptions</a></li>
-                <li class="breadcrumb-item active" aria-current="page text-green">Plan Adjustment</li>
+                <li class="breadcrumb-item active text-primary" aria-current="page">Plan Adjustment</li>
             </ol>
         </nav>
         <h2 class="mb-1 fw-bold display-6">Adjust Your Agreement</h2>
@@ -47,9 +47,9 @@
                             </select>
 
                             <div
-                                class="mt-4 p-4 rounded-xl bg-green-light border d-flex justify-content-between align-items-center">
-                                <span class="x-small fw-bold text-green text-uppercase">Projected Value</span>
-                                <h4 id="priceDisplay" class="mb-0 fw-bold text-green">Rs. {{
+                                class="mt-4 p-4 rounded-xl bg-primary-soft border border-white shadow-sm d-flex justify-content-between align-items-center">
+                                <span class="x-small fw-bold text-primary text-uppercase">Projected Value</span>
+                                <h4 id="priceDisplay" class="mb-0 fw-bold text-primary">Rs. {{
                                     "%.2f"|format(subscription['total_amount']) }}</h4>
                             </div>
                         </div>
@@ -73,7 +73,7 @@
 
                         <div class="d-grid gap-3">
                             <button type="submit"
-                                class="btn btn-success btn-lg rounded-pill py-3 fw-bold shadow-premium">Commit
+                                class="btn btn-primary btn-lg rounded-pill py-3 fw-bold shadow-premium">Commit
                                 Changes</button>
                             <a href="{{ url_for('consumer_subscriptions') }}"
                                 class="btn btn-light rounded-pill py-3 fw-bold text-muted border-0">Discard
@@ -100,8 +100,8 @@
         font-size: 0.75rem;
     }
 
-    .bg-green-light {
-        background-color: #f0fdf4;
+    .bg-primary-soft {
+        background-color: var(--p-50);
     }
 
     .rounded-xl {

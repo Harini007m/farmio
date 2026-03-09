@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% block title %}Vacation Mode - FarmIO{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="page-header border-0 pb-4">
+    <div class="container animate-fade">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-2 small text-uppercase fw-bold letter-spacing-1">
+                <li class="breadcrumb-item"><a href="{{ url_for('consumer_dashboard') }}"
+                        class="text-muted text-decoration-none">Dashboard</a></li>
+                <li class="breadcrumb-item active text-primary" aria-current="page">Vacation</li>
+            </ol>
+        </nav>
+        <h2 class="mb-1 fw-bold display-6">Vacation Mode</h2>
+        <p class="text-muted mb-0 lead small">Schedule a pause for all milk deliveries while you're away</p>
+    </div>
+</div>
+
+<div class="container pb-5">
+    <div class="row g-5">
+        <!-- Add Vacation -->
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-premium animate-fade" style="border-radius: 24px;">
+                <div class="card-header bg-white border-bottom p-4">
+                    <h5 class="mb-0 fw-bold">Plan a Pause</h5>
+                </div>
+                <div class="card-body p-4 p-md-5 text-center">
+                    <div class="mb-4 text-muted opacity-25">
+                        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"></path>
+                            <circle cx="12" cy="11" r="3"></circle>
+                        </svg>
+                    </div>
+                    <h5 class="fw-bold mb-3">Taking a break?</h5>
+                    <p class="text-muted small mb-4">Select the specific date you want to stop all milk and product
+                        deliveries. You can add multiple dates for a longer trip.</p>
+
+                    <form method="POST" class="text-start">
+                        <div class="mb-4">
+                            <label class="form-label text-uppercase small fw-bold text-muted letter-spacing-1">Select
+                                Date</label>
+                            <input type="date" name="vacation_date" class="form-control bg-light border-0 py-3 fw-bold"
+                                required min="{{ today }}">
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-lg w-100 rounded-pill py-3 fw-bold shadow-sm">
+                            Add to Schedule
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scheduled Dates -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-premium animate-fade h-100"
+                style="border-radius: 24px; animation-delay: 0.1s;">
+                <div class="card-header bg-white border-bottom p-4">
+                    <h5 class="mb-0 fw-bold">Scheduled Pauses</h5>
+                </div>
+                <div class="card-body p-4">
+                    {% if vacation_dates %}
+                    <div class="row row-cols-1 row-cols-md-2 g-3">
+                        {% for vd in vacation_dates %}
+                        <div class="col">
+                            <div
+                                class="d-flex justify-content-between align-items-center p-3 rounded-xl border bg-light shadow-sm">
+                                <div>
+                                    <div class="small text-uppercase fw-bold text-muted letter-spacing-1"
+                                        style="font-size: 0.65rem;">Paused Date</div>
+                                    <div class="fw-bold text-dark">{{ vd['vacation_date'] }}</div>
+                                </div>
+                                <form method="POST"
+                                    action="{{ url_for('delete_vacation', vacation_id=vd['vacation_id']) }}">
+                                    <button type="submit" class="btn btn-link text-danger p-0">
+                                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                            <path
+                                                d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+                                        </svg>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center p-5 opacity-50">
+                        <svg width="64" height="64" fill="var(--p-500)" viewBox="0 0 24 24" class="mb-3">
+                            <path
+                                d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm3.3 14.71L11 12.41V7h2v4.59l3.71 3.71-1.42 1.41z" />
+                        </svg>
+                        <p class="fw-bold">No pauses scheduled yet.</p>
+                        <p class="small">Daily deliveries will continue uninterrupted.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .letter-spacing-1 {
+        letter-spacing: 0.1em;
+    }
+
+    .rounded-xl {
+        border-radius: 12px;
+    }
+</style>
+{% endblock %}

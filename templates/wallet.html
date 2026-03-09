@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{% block title %}Wallet & Passbook - FarmIO{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="page-header border-0 pb-4">
+    <div class="container animate-fade">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-2 small text-uppercase fw-bold letter-spacing-1">
+                <li class="breadcrumb-item"><a href="{{ url_for('consumer_dashboard') }}"
+                        class="text-muted text-decoration-none">Dashboard</a></li>
+                <li class="breadcrumb-item active text-primary" aria-current="page">Wallet</li>
+            </ol>
+        </nav>
+        <h2 class="mb-1 fw-bold display-6">Digital Wallet</h2>
+        <p class="text-muted mb-0 lead small">Manage your pre-paid balance for seamless daily deliveries</p>
+    </div>
+</div>
+
+<div class="container pb-5">
+    <div class="row g-5">
+        <!-- Balance & Recharge -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-premium mb-4 animate-fade"
+                style="border-radius: 24px; background: linear-gradient(135deg, var(--p-600), var(--p-900)); color: white;">
+                <div class="card-body p-4 p-md-5">
+                    <p class="text-uppercase small fw-bold opacity-75 letter-spacing-1 mb-2">Available Balance</p>
+                    <h1 class="display-4 fw-bold mb-4">Rs. {{ "%.2f"|format(balance) }}</h1>
+                    <div class="d-flex align-items-center gap-2 small opacity-75">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        Last updated just now
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-premium animate-fade" style="border-radius: 24px; animation-delay: 0.1s;">
+                <div class="card-header bg-white border-bottom p-4">
+                    <h5 class="mb-0 fw-bold">Quick Recharge</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST">
+                        <div class="mb-4">
+                            <label class="form-label text-uppercase small fw-bold text-muted letter-spacing-1">Amount
+                                (Rs)</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text bg-light border-0 fw-bold text-muted">Rs.</span>
+                                <input type="number" name="amount" class="form-control bg-light border-0 py-3 fw-bold"
+                                    placeholder="500" min="10" required>
+                            </div>
+                        </div>
+                        <div class="d-grid gap-2 mb-3">
+                            <button type="button" class="btn btn-outline-primary rounded-pill fw-bold py-2"
+                                onclick="document.querySelector('input[name=amount]').value=500">+ Rs. 500</button>
+                            <button type="button" class="btn btn-outline-primary rounded-pill fw-bold py-2"
+                                onclick="document.querySelector('input[name=amount]').value=1000">+ Rs. 1000</button>
+                        </div>
+                        <button type="submit"
+                            class="btn btn-primary btn-lg w-100 rounded-pill py-3 fw-bold shadow-sm mt-2">Proceed to
+                            Pay</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Passbook -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-premium animate-fade h-100"
+                style="border-radius: 24px; animation-delay: 0.2s;">
+                <div class="card-header bg-white border-bottom p-4 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold">Wallet Passbook</h5>
+                    <span class="badge bg-light text-muted rounded-pill px-3 py-2 small fw-bold">History</span>
+                </div>
+                <div class="card-body p-0">
+                    {% if transactions %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4">Timestamp</th>
+                                    <th>Description</th>
+                                    <th>Type</th>
+                                    <th class="text-end pe-4">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for tx in transactions %}
+                                <tr>
+                                    <td class="ps-4 small text-muted">{{ tx['timestamp'] }}</td>
+                                    <td>
+                                        <div class="fw-bold text-dark">{{ tx['description'] }}</div>
+                                    </td>
+                                    <td>
+                                        <span
+                                            class="badge rounded-pill px-3 py-2 small {% if tx['type'] == 'recharge' %}bg-primary-soft text-primary{% else %}bg-light text-muted{% endif %}">
+                                            {{ tx['type']|capitalize }}
+                                        </span>
+                                    </td>
+                                    <td
+                                        class="text-end pe-4 fw-bold {% if tx['amount'] > 0 %}text-primary{% else %}text-danger{% endif %}">
+                                        {% if tx['amount'] > 0 %}+{% endif %} Rs. {{ "%.2f"|format(tx['amount']) }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center p-5 opacity-25">
+                        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="20" height="14" x="2" y="5" rx="2"></rect>
+                            <line x1="2" y1="10" x2="22" y2="10"></line>
+                        </svg>
+                        <p class="mt-3 fw-bold">No transactions recorded yet.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-primary-soft {
+        background-color: var(--p-50);
+    }
+
+    .letter-spacing-1 {
+        letter-spacing: 0.1em;
+    }
+</style>
+{% endblock %}

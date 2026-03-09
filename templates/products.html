@@ -9,7 +9,7 @@
             <ol class="breadcrumb mb-2 small text-uppercase fw-bold letter-spacing-1">
                 <li class="breadcrumb-item"><a href="{{ url_for('index') }}"
                         class="text-muted text-decoration-none">Home</a></li>
-                <li class="breadcrumb-item active" aria-current="page text-green">Derivatives Store</li>
+                <li class="breadcrumb-item active text-primary" aria-current="page">Derivatives Store</li>
             </ol>
         </nav>
         <h2 class="mb-1 fw-bold display-6">{% if role == 'farmer' %}Supply Chain Optimization{% else %}Value-Added
@@ -66,7 +66,7 @@
                     </div>
                     <div class="col-md-2">
                         <button type="submit"
-                            class="btn btn-success btn-lg w-100 rounded-pill py-3 fw-bold shadow-premium">Release
+                            class="btn btn-primary btn-lg w-100 rounded-pill py-3 fw-bold shadow-premium">Release
                             Batch</button>
                     </div>
                 </div>
@@ -99,7 +99,7 @@
                     </div>
 
                     <div class="card-body p-4">
-                        <h6 class="fw-bold text-dark mb-1">{{ product['product_name'] }}</h6>
+                        <h6 class="fw-bold text-dark mb-1 text-capitalize">{{ product['product_name'] }}</h6>
                         {% if role == 'consumer' %}
                         <p class="x-small text-muted mb-3">{{ product['farm_name'] }}</p>
                         {% endif %}
@@ -111,7 +111,7 @@
                             </div>
                             <div class="d-flex justify-content-between align-items-center">
                                 <span class="text-muted small">Price Unit</span>
-                                <span class="fw-bold text-green">Rs. {{ product['price'] }}</span>
+                                <span class="fw-bold text-primary">Rs. {{ product['price'] }}</span>
                             </div>
                         </div>
 
@@ -127,7 +127,7 @@
                                 <input type="number" class="form-control bg-light border-0 py-2" name="quantity"
                                     min="0.1" max="{{ product['quantity'] }}" step="0.1" placeholder="Qty" required>
                                 <button type="submit"
-                                    class="btn btn-success px-3 fw-bold rounded-pill-end">Purchase</button>
+                                    class="btn btn-primary px-3 fw-bold rounded-pill-end shadow-sm">Purchase</button>
                             </div>
                         </form>
                         {% endif %}
@@ -138,7 +138,14 @@
         </div>
         {% else %}
         <div class="card border-0 shadow-premium p-5 text-center" style="border-radius: 24px;">
-            <div class="display-3 opacity-10 mb-3">🧺</div>
+            <div class="mb-4 text-muted opacity-25">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+                    <path d="M3 6h18"></path>
+                    <path d="M16 10a4 4 0 0 1-8 0"></path>
+                </svg>
+            </div>
             <h5 class="fw-bold">Inventory Empty</h5>
             <p class="text-muted mx-auto" style="max-width: 350px;">{% if role == 'farmer' %}No products listed. Convert
                 your surplus milk into high-demand dairy items today.{% else %}No value-added products are currently

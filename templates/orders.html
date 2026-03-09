@@ -44,7 +44,7 @@
                             </td>
                             <td class="small">{{ order['order_date'] }}</td>
                             <td>{{ order['quantity'] }} L</td>
-                            <td class="fw-bold text-green">Rs. {{ "%.2f"|format(order['quantity'] *
+                            <td class="fw-bold text-primary">Rs. {{ "%.2f"|format(order['quantity'] *
                                 order['price_per_litre']) }}</td>
                             <td><span class="badge-status {{ order['status'] }}">{{ order['status'] }}</span></td>
                             {% if role == 'farmer' %}
@@ -52,7 +52,7 @@
                                 <form method="POST"
                                     action="{{ url_for('update_order_status', order_id=order['order_id']) }}">
                                     <select name="status"
-                                        class="form-select form-select-sm rounded-pill border-0 bg-light px-3 py-2 fw-bold small"
+                                        class="form-select form-select-sm rounded-pill border-0 bg-light px-3 py-2 fw-bold small transition-all shadow-sm"
                                         style="width: 140px;" onchange="this.form.submit()">
                                         <option value="pending" {% if order['status']=='pending' %}selected{% endif %}>
                                             Pending</option>
@@ -81,9 +81,14 @@
             </div>
             {% else %}
             <div class="p-5 text-center text-muted">
-                <div class="mb-4 opacity-75">
-                    <img src="{{ url_for('static', filename='empty_cart.png') }}" alt="Empty Cart"
-                        style="width: 100px; height: auto;">
+                <div class="mb-4 opacity-25">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="8" cy="21" r="1"></circle>
+                        <circle cx="19" cy="21" r="1"></circle>
+                        <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12">
+                        </path>
+                    </svg>
                 </div>
                 <p>No milk orders found in the database.</p>
             </div>

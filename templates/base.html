@@ -44,32 +44,50 @@
                     </li>
                     {% else %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('consumer_dashboard') }}">Dashboard</a>
+                        <a class="nav-link" href="{{ url_for('consumer_dashboard') }}">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('consumer_orders') }}">My Orders</a>
+                        <a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('wallet') }}">
+                            <span
+                                class="badge bg-primary-soft text-primary rounded-pill px-3 py-2 border border-primary-subtle shadow-sm">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1">
+                                    <rect width="20" height="14" x="2" y="5" rx="2"></rect>
+                                    <line x1="2" y1="10" x2="22" y2="10"></line>
+                                </svg>
+                                Rs. {{ "%.2f"|format(session.get('wallet_balance', 0)) }}
+                            </span>
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('consumer_subscriptions') }}">Subscriptions</a>
+                        <a class="nav-link" href="{{ url_for('vacation') }}">Vacation</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('consumer_products') }}">Products</a>
+                        <a class="nav-link" href="{{ url_for('consumer_orders') }}">History</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('consumer_subscriptions') }}">Plans</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('consumer_products') }}">Boutique</a>
                     </li>
                     {% endif %}
                     <li class="nav-item ms-2">
-                        <span class="nav-link text-muted" style="font-size:0.85rem;">
+                        <span class="nav-link text-muted fw-semibold" style="font-size:0.85rem;">
                             {{ session.get('user_name', '') }}
                         </span>
                     </li>
                     <li class="nav-item ms-1">
-                        <a class="btn btn-outline-success btn-sm" href="{{ url_for('logout') }}">Logout</a>
+                        <a class="btn btn-outline-primary btn-sm rounded-pill px-3"
+                            href="{{ url_for('logout') }}">Logout</a>
                     </li>
                     {% else %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('login') }}">Login</a>
                     </li>
                     <li class="nav-item ms-1">
-                        <a class="btn btn-success btn-sm" href="{{ url_for('register') }}">Register</a>
+                        <a class="btn btn-primary btn-sm rounded-pill px-4 shadow-sm"
+                            href="{{ url_for('register') }}">Register</a>
                     </li>
                     {% endif %}
                 </ul>

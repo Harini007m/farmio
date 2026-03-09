@@ -16,23 +16,26 @@
 
                 // Remove active class from all
                 cards.forEach(c => {
-                    c.classList.remove('border-green', 'shadow-premium', 'bg-green-light');
+                    c.classList.remove('border-primary', 'shadow-premium', 'bg-primary-soft');
                     c.style.borderColor = 'var(--s-200)';
                 });
 
                 // Add active class to this
-                this.classList.add('border-green', 'shadow-premium', 'bg-green-light');
+                this.classList.add('border-primary', 'shadow-premium', 'bg-primary-soft');
                 this.style.borderColor = 'var(--p-500)';
 
                 // Update hidden input
+                const listingInput = document.getElementById('listing_id');
                 const listingId = this.dataset.listingId;
                 listingInput.value = listingId;
 
                 // Update display
+                const availableDisplay = document.getElementById('availableDisplay');
                 const remaining = this.dataset.remaining;
-                availableDisplay.innerHTML = `<span class="text-green fw-bold">Ready to order.</span> Capacity: <strong>${remaining} L</strong>`;
+                availableDisplay.innerHTML = `<span class="text-primary fw-bold">Ready to order.</span> Capacity: <strong>${remaining} L</strong>`;
 
                 // Set max quantity
+                const quantityInput = document.getElementById('quantity');
                 quantityInput.max = remaining;
                 if (parseFloat(quantityInput.value) > parseFloat(remaining)) {
                     quantityInput.value = remaining;
@@ -54,7 +57,7 @@
 <div class="page-header border-0 pb-4">
     <div class="container animate-fade">
         <h2 class="mb-1 fw-bold display-6">Secure Your Supply</h2>
-        <p class="text-muted mb-0 lead small">Ordering directly from <span class="text-green fw-bold">{{
+        <p class="text-muted mb-0 lead small">Ordering directly from <span class="text-primary fw-bold">{{
                 farmer['farmer_name'] }}</span></p>
     </div>
 </div>
@@ -69,7 +72,7 @@
                 </div>
                 <div class="card-body p-4">
                     <div class="d-flex align-items-center gap-3 mb-4">
-                        <div class="bg-green-light text-green fw-bold d-flex align-items-center justify-content-center"
+                        <div class="bg-primary-soft text-primary fw-bold d-flex align-items-center justify-content-center"
                             style="width: 50px; height:50px; border-radius: 12px; font-size: 1.25rem;">
                             {{ farmer['farmer_name'][0]|upper }}
                         </div>
@@ -82,7 +85,7 @@
                     <div class="vstack gap-3 x-small fw-bold text-muted text-uppercase">
                         <div class="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
                             <span>Base Rate</span>
-                            <span class="text-green">Rs. {{ farmer['price_per_litre'] }}/L</span>
+                            <span class="text-primary">Rs. {{ farmer['price_per_litre'] }}/L</span>
                         </div>
                         <div class="d-flex justify-content-between align-items-center py-2">
                             <span>Operational Area</span>
@@ -118,7 +121,7 @@
                                         {% if listing['is_closed'] %}
                                         <span class="badge bg-danger rounded-pill x-small px-2">CLOSED</span>
                                         {% else %}
-                                        <span class="badge bg-success-soft text-success rounded-pill x-small px-2">{{
+                                        <span class="badge bg-primary-soft text-primary rounded-pill x-small px-2">{{
                                             listing['remaining'] }} L Left</span>
                                         {% endif %}
                                     </div>
@@ -129,7 +132,7 @@
                                     {% if listing['collection_time'] %}
                                     <div class="d-flex justify-content-between x-small text-muted mt-1">
                                         <span>Fresh Batch</span>
-                                        <span class="text-green fw-bold">{{ listing['collection_time'] }}</span>
+                                        <span class="text-primary fw-bold">{{ listing['collection_time'] }}</span>
                                     </div>
                                     {% endif %}
                                 </div>
@@ -161,7 +164,7 @@
 
                         <div class="d-grid gap-3">
                             <button type="submit"
-                                class="btn btn-success btn-lg rounded-pill py-3 fw-bold shadow-premium">Confirm & Place
+                                class="btn btn-primary btn-lg rounded-pill py-3 fw-bold shadow-premium">Confirm & Place
                                 Order</button>
                             <a href="{{ url_for('consumer_dashboard') }}"
                                 class="btn btn-light rounded-pill py-3 fw-bold text-muted border-0">Back to
@@ -172,14 +175,17 @@
             </div>
             {% else %}
             <div class="card border-0 shadow-premium p-5 text-center" style="border-radius: 24px;">
-                <div class="mb-4 opacity-75">
-                    <img src="{{ url_for('static', filename='empty_pail.png') }}" alt="No Inventory"
-                        style="width: 100px; height: auto;">
+                <div class="mb-4 text-muted opacity-25">
+                    <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"></path>
+                        <path d="m9 12 2 2 4-4"></path>
+                    </svg>
                 </div>
                 <h5 class="fw-bold text-dark">No Active Listings</h5>
                 <p class="text-muted mb-4">This farmer hasn't updated their milk inventory for the upcoming days yet.
                 </p>
-                <a href="{{ url_for('consumer_dashboard') }}" class="btn btn-success rounded-pill px-4">Browse Other
+                <a href="{{ url_for('consumer_dashboard') }}" class="btn btn-primary rounded-pill px-4">Browse Other
                     Farmers</a>
             </div>
             {% endif %}
@@ -192,6 +198,7 @@
         border-radius: 16px;
         cursor: pointer;
         transition: all 0.2s;
+        border: 2px solid var(--s-200);
     }
 
     .listing-select-card.is-closed {
@@ -207,15 +214,11 @@
         font-size: 0.75rem;
     }
 
-    .bg-success-soft {
-        background: #d1fae5;
+    .bg-primary-soft {
+        background-color: var(--p-50);
     }
 
-    .bg-green-light {
-        background-color: #f0fdf4;
-    }
-
-    .border-green {
+    .border-primary {
         border-color: var(--p-500) !important;
     }
 
