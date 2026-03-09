@@ -3,28 +3,49 @@
 
 {% block content %}
 <!-- Page Header -->
-<div class="page-header border-0 pb-4">
-    <div class="container animate-fade">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-2 small text-uppercase fw-bold letter-spacing-1">
-                <li class="breadcrumb-item"><a href="{{ url_for('index') }}"
-                        class="text-muted text-decoration-none">Home</a></li>
-                <li class="breadcrumb-item active text-primary" aria-current="page">Marketplace</li>
-            </ol>
-        </nav>
-        <h2 class="mb-1 fw-bold display-6">Farm Direct Marketplace</h2>
-        <p class="text-muted mb-0 lead small">
-            Fresh milk from local farmers in <span class="text-primary fw-bold">{{ user_location or 'your area'
-                }}</span>
-        </p>
+<div class="page-header border-0 pb-0 mb-5 overflow-hidden position-relative"
+    style="background: linear-gradient(to right, #ffffff, var(--p-50));">
+    <div class="container animate-fade py-5">
+        <div class="row align-items-center">
+            <div class="col-lg-7">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-3 small text-uppercase fw-bold letter-spacing-1">
+                        <li class="breadcrumb-item"><a href="{{ url_for('index') }}"
+                                class="text-muted text-decoration-none">Home</a></li>
+                        <li class="breadcrumb-item active text-primary" aria-current="page">Marketplace</li>
+                    </ol>
+                </nav>
+                <h1 class="mb-2 fw-bold display-5">Welcome back, <span class="text-primary">{{ session.get('username',
+                        'Consumer') }}</span></h1>
+                <p class="text-muted mb-0 lead-sm">
+                    Discover pure, additive-free milk from verified farms in <span
+                        class="text-dark fw-bold border-bottom border-primary border-2">{{ user_location or 'your area'
+                        }}</span>.
+                </p>
+            </div>
+            <div class="col-lg-5 d-none d-lg-block">
+                <div class="d-flex justify-content-end gap-3">
+                    <div class="p-3 bg-white rounded-xl shadow-premium border border-light text-center"
+                        style="min-width: 120px;">
+                        <div class="text-primary fw-bold display-6 mb-0">{{ farmers|length }}</div>
+                        <div class="x-small text-muted fw-bold text-uppercase">Farms Nearby</div>
+                    </div>
+                    <div class="p-3 bg-white rounded-xl shadow-premium border border-light text-center"
+                        style="min-width: 120px;">
+                        <div class="text-primary fw-bold display-6 mb-0">{{ my_orders|length }}</div>
+                        <div class="x-small text-muted fw-bold text-uppercase">Active Orders</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
 <div class="container pb-5">
     {% if vacation_active %}
-    <div class="alert alert-info border-0 shadow-sm d-flex align-items-center gap-3 p-4 mb-5 animate-fade"
-        style="border-radius: 20px; background: #f0f9ff;">
-        <div class="bg-primary text-white rounded-circle p-2">
+    <div class="alert alert-info border-0 shadow-premium d-flex align-items-center gap-4 p-4 mb-5 animate-fade"
+        style="border-radius: 20px; background: rgba(59, 130, 246, 0.05); border-left: 5px solid var(--p-600) !important;">
+        <div class="bg-primary text-white rounded-xl p-3 shadow-sm">
             <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                 stroke-linejoin="round" viewBox="0 0 24 24">
                 <path
@@ -34,9 +55,9 @@
         </div>
         <div>
             <h6 class="mb-1 fw-bold text-dark">Vacation Mode Active</h6>
-            <p class="mb-0 small text-muted">A pause is scheduled for tomorrow's delivery. You can resume
-                deliveries in the <a href="{{ url_for('vacation') }}" class="text-primary fw-bold">Vacation
-                    Settings</a>.</p>
+            <p class="mb-0 small text-muted">A delivery pause is scheduled. You can manage intervals in your <a
+                    href="{{ url_for('vacation') }}" class="text-primary fw-bold text-decoration-none">Vacation Command
+                    Center →</a>.</p>
         </div>
     </div>
     {% endif %}
@@ -44,109 +65,141 @@
     <!-- Top Utility Console: Wallet & Tomorrow -->
     <div class="row g-4 mb-5 animate-fade" style="animation-delay: 0.1s;">
         <!-- Wallet Widget -->
-        <div class="col-lg-6">
-            <div class="card h-100 border-0 shadow-premium overflow-hidden"
-                style="border-radius: 24px; background: linear-gradient(135deg, var(--p-600), var(--p-900)); color: white;">
-                <div class="card-body p-4 d-flex align-items-center justify-content-between">
-                    <div>
-                        <p class="text-uppercase small fw-bold opacity-75 letter-spacing-1 mb-1">Passbook
-                            Balance</p>
-                        <h2 class="fw-bold mb-0">Rs. {{ "%.2f"|format(session.get('wallet_balance', 0)) }}</h2>
-                        <a href="{{ url_for('wallet') }}"
-                            class="btn btn-white btn-sm rounded-pill px-4 fw-bold mt-3 text-primary bg-white border-0 shadow-sm transition-all hover-up">Quick
-                            Recharge</a>
-                    </div>
-                    <div class="opacity-10 scale-150 me-4">
-                        <svg width="80" height="80" fill="white" viewBox="0 0 24 24">
+        <div class="col-lg-7">
+            <div class="card h-100 border-0 shadow-premium overflow-hidden border border-white"
+                style="border-radius: 30px; background: linear-gradient(135deg, var(--p-700) 0%, var(--p-900) 100%);">
+                <div class="card-body p-5 position-relative">
+                    <div class="position-absolute top-0 end-0 p-5 opacity-10 scale-150 d-none d-md-block">
+                        <svg width="120" height="120" fill="white" viewBox="0 0 24 24">
                             <path
                                 d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" />
                         </svg>
+                    </div>
+                    <div class="position-relative z-1">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <div class="bg-white rounded-circle" style="width: 8px; height: 8px;"></div>
+                            <p class="text-uppercase x-small fw-bold text-white opacity-50 letter-spacing-1 mb-0">
+                                Virtual Wallet Balance</p>
+                        </div>
+                        <h1 class="fw-bold mb-4 text-white display-4">Rs. {{ "%.2f"|format(session.get('wallet_balance',
+                            0)) }}</h1>
+                        <div class="d-flex gap-3">
+                            <a href="{{ url_for('wallet') }}"
+                                class="btn btn-white rounded-pill px-4 py-2 fw-bold text-primary bg-white border-0 shadow-lg transition-all hover-up">Add
+                                Credits</a>
+                            <a href="{{ url_for('wallet') }}"
+                                class="btn btn-outline-light rounded-pill px-4 py-2 fw-bold border-opacity-25 border-white">History</a>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Tomorrow's Delivery Widget -->
-        <div class="col-lg-6">
-            <div class="card h-100 border-0 shadow-premium bg-white" style="border-radius: 24px;">
-                <div class="card-body p-4 d-flex align-items-center">
-                    <div class="bg-primary-soft text-primary p-3 rounded-circle me-4">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
-                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                        </svg>
+        <div class="col-lg-5">
+            <div class="card h-100 border-0 shadow-premium bg-white border border-light" style="border-radius: 30px;">
+                <div class="card-body p-5 d-flex flex-column justify-content-center">
+                    <div class="d-flex align-items-center gap-4 mb-4">
+                        <div class="bg-primary-soft text-primary p-4 rounded-2xl shadow-sm">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="mb-0 small fw-bold text-muted text-uppercase letter-spacing-1">Next Fulfillment
+                            </p>
+                            <h4 class="mb-0 fw-bold text-dark">Tomorrow, 07:00 AM</h4>
+                        </div>
                     </div>
-                    <div class="flex-grow-1">
-                        <p class="mb-0 small fw-bold text-muted text-uppercase letter-spacing-1">Next Cycle
-                            Fulfillment</p>
-                        <h5 class="mb-0 fw-bold text-dark">Tomorrow, 07:00 AM</h5>
-                        <p class="mb-0 x-small text-primary fw-medium mt-1">Order by 10:00 PM tonight</p>
+                    <div class="p-3 bg-light rounded-xl border border-dashed border-primary border-opacity-25">
+                        <p class="mb-0 x-small text-muted fw-medium text-center">Place your order before <span
+                                class="text-primary fw-bold">10:00 PM tonight</span> to guarantee reservation.</p>
                     </div>
-                    <a href="{{ url_for('vacation') }}" class="btn btn-light rounded-pill btn-sm fw-bold px-3">Pause
-                        Plan</a>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Farmer Marketplace Section -->
+    <div class="d-flex justify-content-between align-items-end mb-4 animate-fade">
+        <div>
+            <h3 class="fw-bold text-dark mb-1">Nearby Verified Farms</h3>
+            <p class="text-muted small mb-0">Standardized proximity matching within 7km</p>
+        </div>
+        <a href="{{ url_for('consumer_dashboard') }}"
+            class="text-primary x-small fw-bold text-uppercase text-decoration-none">Refresh Feed ⟳</a>
+    </div>
+
     {% if farmers %}
-    <div class="row g-4 mb-5">
+    <div class="row g-5 mb-5">
         {% for farmer in farmers %}
         <div class="col-lg-4 col-md-6">
-            <div class="card h-100 border-0 shadow-premium transition-all hover-up overflow-hidden"
-                style="border-radius: 20px;">
+            <div class="card h-100 border-0 shadow-premium transition-all hover-up overflow-hidden bg-white border border-white"
+                style="border-radius: 28px;">
                 <!-- Farmer Visual Header -->
-                <div class="p-4 bg-light border-bottom position-relative">
+                <div class="p-4 bg-light bg-opacity-50 border-bottom position-relative"
+                    style="background: linear-gradient(to bottom, #f8fafc, #ffffff);">
                     <div class="d-flex align-items-center gap-3">
-                        <div class="bg-white rounded-xl shadow-sm p-1" style="border-radius: 12px;">
-                            <div class="bg-primary-soft fw-bold text-primary d-flex align-items-center justify-content-center"
-                                style="width: 50px; height:50px; border-radius: 8px; font-size: 1.25rem;">
+                        <div class="bg-white rounded-2xl shadow-sm p-1 border border-light"
+                            style="width: 64px; height: 64px;">
+                            <div class="bg-primary-soft fw-bold text-primary d-flex align-items-center justify-content-center h-100 w-100"
+                                style="border-radius: 12px; font-size: 1.5rem; font-family: var(--font-heading);">
                                 {{ farmer['farmer_name'][0]|upper }}
                             </div>
                         </div>
                         <div>
-                            <h6 class="mb-0 fw-bold text-dark">{{ farmer['farmer_name'] }}</h6>
-                            <p class="mb-0 x-small text-muted">{{ farmer['farm_name'] }}</p>
+                            <h6 class="mb-1 fw-bold text-dark">{{ farmer['farmer_name'] }}</h6>
+                            <div class="d-flex align-items-center gap-1">
+                                <svg width="12" height="12" fill="var(--p-400)" viewBox="0 0 24 24">
+                                    <path
+                                        d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                                </svg>
+                                <p class="mb-0 x-small text-muted fw-medium">{{ farmer['farm_name'] }}</p>
+                            </div>
                         </div>
                     </div>
-                    <div class="position-absolute top-0 end-0 p-3">
-                        <span class="badge bg-white shadow-sm text-primary rounded-pill px-2 py-1 x-small fw-bold">
+                    <div class="position-absolute top-0 end-0 p-4">
+                        <div
+                            class="bg-white shadow-sm border border-light text-primary rounded-pill px-3 py-1 x-small fw-bold">
                             {{ farmer['distance_km'] if farmer['distance_km'] > 0 else '0' }} km
-                        </span>
+                        </div>
                     </div>
                 </div>
 
                 <div class="card-body p-4">
                     <div class="vstack gap-3 mb-4">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="text-muted small">Daily Availability</span>
+                        <div
+                            class="d-flex justify-content-between align-items-center p-3 bg-light rounded-xl border border-white">
+                            <span class="text-muted small fw-medium">Availability</span>
                             <span class="fw-bold text-dark">{{ farmer['remaining'] }} Litres</span>
                         </div>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="text-muted small">Unit Price</span>
-                            <span class="fw-bold text-primary">Rs. {{ farmer['price_per_litre'] }}/L</span>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="text-muted small">Collection Point</span>
-                            <span class="text-dark small text-truncate ms-3 fw-medium">{{ farmer['location']
-                                }}</span>
+                        <div class="d-flex justify-content-between align-items-center px-2">
+                            <span class="text-muted small">Standard Rate</span>
+                            <span class="fw-bold text-primary display-6 mb-0" style="font-size: 1.25rem;">Rs. {{
+                                farmer['price_per_litre'] }}<small class="text-muted x-small">/L</small></span>
                         </div>
                         {% if farmer['collection_time'] %}
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="text-muted small">Batch Time</span>
-                            <span class="badge bg-primary-soft text-primary rounded-pill small fw-bold px-2 py-1">{{
+                        <div class="d-flex justify-content-between align-items-center px-2">
+                            <span class="text-muted small">Supply Window</span>
+                            <span class="badge bg-primary-soft text-primary rounded-pill x-small fw-bold px-3 py-2">{{
                                 farmer['collection_time'] }}</span>
                         </div>
                         {% endif %}
                     </div>
 
-                    <div class="d-grid gap-2">
-                        <a href="{{ url_for('place_order', farmer_id=farmer['farmer_id']) }}"
-                            class="btn btn-primary border-0 shadow-sm rounded-pill fw-bold">Instant Order</a>
-                        <a href="{{ url_for('subscribe', farmer_id=farmer['farmer_id']) }}"
-                            class="btn btn-outline-primary border-2 rounded-pill fw-bold">Subscribe (21
-                            Days)</a>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <a href="{{ url_for('place_order', farmer_id=farmer['farmer_id']) }}"
+                                class="btn btn-primary w-100 rounded-pill fw-bold shadow-sm py-3 px-2"
+                                style="font-size: 0.85rem;">Instant Order</a>
+                        </div>
+                        <div class="col-6">
+                            <a href="{{ url_for('subscribe', farmer_id=farmer['farmer_id']) }}"
+                                class="btn btn-outline-primary w-100 border-2 rounded-pill fw-bold py-3 px-2"
+                                style="font-size: 0.85rem;">Subscribe</a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -154,83 +207,92 @@
         {% endfor %}
     </div>
     {% else %}
-    <div class="card border-0 shadow-premium p-5 text-center" style="border-radius: 20px;">
+    <div class="card border-0 shadow-premium p-5 text-center mb-5 animate-fade" style="border-radius: 30px;">
         <div class="mb-4 text-muted opacity-25">
             <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
                 stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"></path>
-                <path d="m9 12 2 2 4-4"></path>
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="22" y1="12" x2="18" y2="12"></line>
+                <line x1="6" y1="12" x2="2" y2="12"></line>
+                <line x1="12" y1="6" x2="12" y2="2"></line>
+                <line x1="12" y1="22" x2="12" y2="18"></line>
             </svg>
         </div>
-        <h5 class="fw-bold text-dark">No Farmers in Range</h5>
-        <p class="text-muted mx-auto mb-4" style="max-width: 400px;">We couldn't find any milk listings within
-            {{
-            max_distance }} km of your location. Try expanding your search area in profile settings.</p>
-        <a href="{{ url_for('consumer_dashboard') }}" class="btn btn-light rounded-pill px-4">Check for
-            Updates</a>
+        <h5 class="fw-bold text-dark">Outside Fulfillment Range</h5>
+        <p class="text-muted mx-auto mb-4" style="max-width: 400px;">No verified farmers found within your proximity. We
+            are continuously onboarding new partners in your area. Check back soon!</p>
+        <a href="{{ url_for('consumer_dashboard') }}" class="btn btn-primary rounded-pill px-5 py-3 fw-bold">Try Global
+            Search</a>
     </div>
     {% endif %}
-</div>
 
-<!-- Secondary Management Grid -->
-<div class="row g-4 animate-fade" style="animation-delay: 0.3s;">
-    <div class="col-lg-8">
-        <div class="card border-0 shadow-premium mb-4 overflow-hidden" style="border-radius: 20px;">
-            <div class="card-header bg-white border-bottom p-4">
-                <h5 class="mb-0 fw-bold">Recent Order Activity</h5>
-            </div>
-            <div class="card-body p-0">
-                {% if my_orders %}
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0 align-middle">
-                        <thead class="bg-light">
-                            <tr>
-                                <th class="ps-4">Order #</th>
-                                <th>Farm / Source</th>
-                                <th>Qty</th>
-                                <th>Amount</th>
-                                <th class="text-end pe-4">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for order in my_orders %}
-                            <tr>
-                                <td class="ps-4 text-muted small">#{{ order['order_id'] }}</td>
-                                <td class="fw-bold text-dark">{{ order['farm_name'] }}</td>
-                                <td>{{ order['quantity'] }} L</td>
-                                <td class="fw-bold text-dark">Rs. {{ "%.2f"|format(order['quantity'] *
-                                    order['price_per_litre']) }}</td>
-                                <td class="text-end pe-4">
-                                    <span class="badge-status {{ order['status'] }}">{{ order['status']
-                                        }}</span>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+    <!-- Secondary Management Console -->
+    <div class="row g-5 animate-fade" style="animation-delay: 0.3s;">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-premium mb-0 overflow-hidden bg-white border border-light"
+                style="border-radius: 28px;">
+                <div class="card-header bg-white border-bottom p-4 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold">Recent Fulfillment Logs</h5>
+                    <a href="{{ url_for('consumer_orders') }}"
+                        class="x-small fw-bold text-primary text-decoration-none">View Full History</a>
                 </div>
-                {% else %}
-                <div class="p-5 text-center text-muted small">No recent orders. Time to fresh up!</div>
-                {% endif %}
+                <div class="card-body p-0">
+                    {% if my_orders %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 align-middle">
+                            <thead class="bg-light bg-opacity-50">
+                                <tr>
+                                    <th class="ps-4 text-uppercase x-small fw-bold text-muted">Batch ID</th>
+                                    <th class="text-uppercase x-small fw-bold text-muted">Farm Source</th>
+                                    <th class="text-uppercase x-small fw-bold text-muted">Volume</th>
+                                    <th class="text-uppercase x-small fw-bold text-muted text-center">Outcome</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in my_orders %}
+                                <tr class="border-bottom-0">
+                                    <td class="ps-4 text-muted small">#{{ order['order_id'] }}</td>
+                                    <td class="fw-bold text-dark py-4">{{ order['farm_name'] }}</td>
+                                    <td class="fw-medium text-dark">{{ order['quantity'] }} Litres</td>
+                                    <td class="text-center">
+                                        <span class="badge-status {{ order['status'] }}">{{ order['status'] }}</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="p-5 text-center text-muted small bg-light bg-opacity-25 mt-2">No recent activity found.
+                        Connect with a farmer to begin.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-premium p-5 h-100 overflow-hidden position-relative"
+                style="border-radius: 28px; background: linear-gradient(135deg, var(--p-600), var(--p-900)) !important;">
+                <div class="position-absolute bottom-0 end-0 p-3 opacity-25">
+                    <svg width="150" height="150" fill="white" viewBox="0 0 24 24">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                    </svg>
+                </div>
+                <div class="position-relative z-1 h-100 d-flex flex-column">
+                    <h4 class="text-white fw-bold mb-3">Explore Derivatives</h4>
+                    <p class="text-white opacity-75 small mb-5">Convert your surplus awareness into premium hand-pressed
+                        Paneer, artisanal Ghee, and fresh Cream.</p>
+                    <div class="mt-auto d-grid gap-3">
+                        <a href="{{ url_for('consumer_products') }}"
+                            class="btn btn-white rounded-pill fw-bold text-primary py-3 bg-white border-0 shadow-lg transition-all hover-up">Products
+                            Marketplace</a>
+                        <a href="{{ url_for('consumer_subscriptions') }}"
+                            class="btn btn-link text-white text-decoration-none x-small fw-bold text-uppercase opacity-75 hover-opacity-100 text-center">View
+                            Subscriptions</a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-lg-4">
-        <div class="card border-0 shadow-premium p-4 h-100"
-            style="border-radius: 20px; background: linear-gradient(135deg, var(--p-600), var(--p-900)) !important;">
-            <h5 class="text-white fw-bold mb-3">Explore More</h5>
-            <p class="text-white opacity-75 small mb-4">Discover premium dairy products made with the same farm
-                fresh milk.</p>
-            <div class="vstack gap-2">
-                <a href="{{ url_for('consumer_products') }}"
-                    class="btn btn-white rounded-pill fw-bold text-primary w-100 py-3 bg-white border-0 shadow-sm transition-all hover-up">Browse
-                    Dairy Products</a>
-                <a href="{{ url_for('consumer_subscriptions') }}"
-                    class="btn btn-outline-light border-0 rounded-pill fw-bold w-100 py-3">My Subscriptions</a>
-            </div>
-        </div>
-    </div>
-</div>
 </div>
 
 <style>

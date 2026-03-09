@@ -1,24 +1,32 @@
-# 🥛 Farmio — Farm-to-Door Milk Platform
+# 🥛 Farmio — Premium Farm-to-Door Milk Platform
 
-A web application that directly connects **local dairy farmers** with **consumers** in their area. Farmers can list their daily milk availability, and consumers can browse nearby farms and place orders — all in one place.
+A premium web application that directly connects **local dairy farmers** with **consumers** in their area. Farmio streamlines the supply chain, ensuring pure, fresh milk reaches your doorstep while maximizing earnings for verified farmers.
 
 ---
 
 ## ✨ Features
 
 ### For Farmers
-- **Dashboard** — View today's milk listings, total ordered quantity, remaining milk, and a summary of all recent orders.
-- **Add Milk Listings** — Log morning and evening milk availability with price per litre, collection time, and delivery estimate.
-- **Mark Milk as Externally Sold** — Record milk sold to third parties (e.g., tea shops, restaurants) to keep remaining quantity accurate.
-- **Manage Products** — List dairy products (e.g., ghee, paneer, curd) with quantity and price.
-- **Order Management** — View and update the status of both milk orders and product orders.
+- **Strategic Dashboard** — Real-time analytics on milk listings, active subscription pipelines, and value-added product inventory.
+- **Supply Chain Management** — Optimized morning/evening listing system with automated remaining quantity calculation.
+- **Batch Processing** — Convert surplus milk into high-value derivatives (Paneer, Ghee, Butter) to ensure zero waste.
+- **Dynamic Order Management** — Tracking system for both instant milk orders and batch product deliveries.
 
 ### For Consumers
-- **Nearby Farmer Discovery** — Browse farmers within **7 km** of your location, sorted by distance (uses Haversine formula).
-- **Real-time Availability** — See exactly how many litres are remaining for each farmer today, accounting for existing orders and external sales.
-- **Place Orders** — Choose morning or evening delivery and specify how many litres you need.
-- **Shop Dairy Products** — Browse and buy products listed by farmers.
-- **Order History** — Track all your milk and product orders in one place.
+- **Proximity Discovery** — Smart matching with farmers within **7 km**, utilizing high-precision geolocation.
+- **Milk Continuity Plans (Subscriptions)** — 21-day recurring delivery agreements for consistent, worry-free supply.
+- **Vacation Orchestration** — Pause deliveries instantly with integrated vacation mode for any duration.
+- **Integrated Wallet** — Seamless, cashless transactions with a built-in virtual wallet and transaction history.
+- **Marketplace Store** — Purchase artisanal dairy products directly from local farmers.
+
+---
+
+## 🎨 Design Aesthetic
+
+Farmio features a **Premium Indigo & Slate** visual identity, designed for a professional and trustworthy user experience.
+- **Sophisticated Palette** — Transition from "base green" to a curated Indigo (`#4665f0`) and Slate design system.
+- **Modern Iconography** — Scalable SVG icons and abstract visuals for a clean, professional look.
+- **Responsive Premium UI** — Mobile-first, glassmorphic navigation and shadow-rich components for a high-end feel.
 
 ---
 
@@ -29,8 +37,9 @@ A web application that directly connects **local dairy farmers** with **consumer
 | Backend    | Python · Flask                    |
 | Database   | SQLite 3                          |
 | Auth       | Werkzeug (password hashing)       |
-| Frontend   | HTML · Jinja2 · CSS · JavaScript  |
-| Distance   | Haversine formula (geolocation)   |
+| Frontend   | HTML5 · CSS3 (Vanilla) · Jinja2   |
+| Design     | Premium Indigo Design System      |
+| Logic      | JavaScript (ES6+)                 |
 
 ---
 
@@ -38,26 +47,23 @@ A web application that directly connects **local dairy farmers** with **consumer
 
 ```
 farmio/                        # Repo root
-├── app.py                     # Flask application — all routes and business logic
-├── database.db                # SQLite database (auto-created on first run, git-ignored)
-├── .gitignore                 # Python / Flask ignore rules
-├── README.md
+├── app.py                     # Core Flask application & business logic
+├── database.db                # SQLite database (auto-created)
 ├── static/
 │   ├── css/
-│   │   └── style.css          # Global stylesheet
+│   │   └── style.css          # Premium design system tokens & styles
 │   └── js/
-│       └── script.js          # Frontend scripts
+│       └── script.js          # Interactive frontend logic
 └── templates/
-    ├── base.html              # Shared base layout
-    ├── index.html             # Landing page
-    ├── register.html          # Registration (farmer / consumer)
-    ├── login.html             # Login page
-    ├── farmer_dashboard.html  # Farmer home
-    ├── add_milk.html          # Add milk listing form
-    ├── consumer_dashboard.html # Consumer home (nearby farmers)
-    ├── place_order.html       # Order placement
-    ├── products.html          # Products listing
-    └── orders.html            # Order history (shared by both roles)
+    ├── base.html              # Shared layout & navigation
+    ├── index.html             # Landing page with abstract visuals
+    ├── farmer_dashboard.html  # Farmer workspace
+    ├── consumer_dashboard.html # Marketplace discovery
+    ├── subscribe.html         # Subscription configuration
+    ├── subscriptions.html     # Contract management
+    ├── wallet.html            # Financial management
+    ├── vacation.html          # Delivery pause scheduling
+    └── products.html          # Value-added derivatives store
 ```
 
 ---
@@ -77,76 +83,53 @@ farmio/                        # Repo root
    cd farmio
    ```
 
-2. **Create and activate a virtual environment**
+2. **Initialize Environment**
    ```bash
    python -m venv venv
    # Windows
    venv\Scripts\activate
-   # macOS / Linux
-   source venv/bin/activate
    ```
 
-3. **Install dependencies**
+3. **Install Dependencies**
    ```bash
-   pip install flask werkzeug
+   pip install flask
    ```
 
-4. **Run the application**
+4. **Launch Application**
    ```bash
    python app.py
    ```
-
-5. **Open your browser** and visit `http://localhost:5000`
-
-> The database (`database.db`) is created automatically on first run.
 
 ---
 
 ## 🗃️ Database Schema
 
-| Table            | Description                                      |
-|------------------|--------------------------------------------------|
-| `users`          | All users (farmers & consumers) with coordinates |
-| `farmers`        | Farmer profile, farm name, capacity, base price  |
-| `milk_listings`  | Daily milk availability (morning + evening)      |
-| `orders`         | Milk orders placed by consumers                  |
-| `products`       | Dairy products listed by farmers                 |
-| `product_orders` | Orders placed for dairy products                 |
+| Table                 | Description                                      |
+|-----------------------|--------------------------------------------------|
+| `users`               | Unified user accounts with GPS coordinates       |
+| `farmers`             | Verified farmer profiles and farm metadata       |
+| `milk_listings`       | Morning/Evening availability batches             |
+| `orders`              | Instant one-time milk purchase records           |
+| `subscriptions`       | 21-day recurring delivery contracts              |
+| `products`            | Value-added dairy batch listings                 |
+| `product_orders`      | Marketplace transaction records                  |
+| `wallet_transactions` | Comprehensive financial audit log                |
+| `vacation_dates`      | User-scheduled delivery pause dates              |
 
 ---
 
-## 🌍 Location & Distance
+## 📋 Strategic Routes
 
-When registering, users grant access to their **GPS coordinates** (via browser geolocation). These are stored and used to:
-- Show consumers only farmers within **7 km**, sorted nearest first.
-- Let farmers and consumers see their location on their profile.
-
----
-
-## 🔐 Authentication & Roles
-
-- Passwords are hashed using **Werkzeug's** `generate_password_hash`.
-- Two roles: `farmer` and `consumer` — each has separate dashboards and route guards.
-- Session-based authentication with `@login_required`, `@farmer_required`, and `@consumer_required` decorators.
-
----
-
-## 📋 Key Routes
-
-| Route                                    | Role     | Description                       |
-|------------------------------------------|----------|-----------------------------------|
-| `/`                                      | Public   | Landing page with platform stats  |
-| `/register`                              | Public   | Register as farmer or consumer    |
-| `/login`                                 | Public   | Log in                            |
-| `/farmer/dashboard`                      | Farmer   | Main farmer dashboard             |
-| `/farmer/add-milk`                       | Farmer   | Add a milk listing                |
-| `/farmer/mark-milk-used/<listing_id>`    | Farmer   | Record externally sold milk       |
-| `/farmer/products`                       | Farmer   | Manage dairy products             |
-| `/farmer/orders`                         | Farmer   | View and manage all orders        |
-| `/consumer/dashboard`                    | Consumer | Browse nearby farmers             |
-| `/consumer/order/<farmer_id>`            | Consumer | Place a milk order                |
-| `/consumer/products`                     | Consumer | Browse and buy dairy products     |
-| `/consumer/orders`                       | Consumer | View order history                |
+| Route                                  | Role     | Description                       |
+|----------------------------------------|----------|-----------------------------------|
+| `/`                                    | Public   | Landing page with platform stats  |
+| `/consumer/dashboard`                  | Consumer | Proximity-based discovery         |
+| `/consumer/subscribe/<id>`             | Consumer | Configure 21-day continuity plan  |
+| `/consumer/subscriptions`              | Consumer | Manage active supply agreements   |
+| `/consumer/wallet`                     | Consumer | Recharge & track balance          |
+| `/consumer/vacation`                   | Consumer | Schedule delivery pauses          |
+| `/farmer/dashboard`                    | Farmer   | Operation management center       |
+| `/farmer/products`                     | Farmer   | Market derivative batches         |
 
 ---
 
