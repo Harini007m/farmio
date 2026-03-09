@@ -42,7 +42,8 @@ def init_db():
             role TEXT NOT NULL CHECK(role IN ('farmer', 'consumer')),
             location TEXT DEFAULT '',
             latitude REAL DEFAULT 0,
-            longitude REAL DEFAULT 0
+            longitude REAL DEFAULT 0,
+            wallet_balance REAL DEFAULT 0
         );
 
         CREATE TABLE IF NOT EXISTS farmers (
@@ -115,6 +116,23 @@ def init_db():
             created_at TEXT DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (consumer_id) REFERENCES users(user_id),
             FOREIGN KEY (farmer_id) REFERENCES farmers(farmer_id)
+        );
+
+        CREATE TABLE IF NOT EXISTS wallet_transactions (
+            transaction_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            amount REAL NOT NULL,
+            type TEXT NOT NULL CHECK(type IN ('recharge', 'payment', 'refund')),
+            description TEXT,
+            timestamp TEXT DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(user_id)
+        );
+
+        CREATE TABLE IF NOT EXISTS vacation_dates (
+            vacation_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            consumer_id INTEGER NOT NULL,
+            vacation_date TEXT NOT NULL,
+            FOREIGN KEY (consumer_id) REFERENCES users(user_id)
         );
     ''')
     db.commit()
@@ -258,6 +276,7 @@ def login():
                     session['farmer_id'] = farmer['farmer_id']
                 return redirect(url_for('farmer_dashboard'))
             else:
+                session['wallet_balance'] = user['wallet_balance']
                 return redirect(url_for('consumer_dashboard'))
         else:
             flash('Invalid email or password.', 'danger')
@@ -577,6 +596,16 @@ def consumer_dashboard():
     # Sort by distance (nearest first)
     farmer_list.sort(key=lambda x: x['distance_km'])
 
+    # Sync wallet in session
+    user = db.execute('SELECT wallet_balance FROM users WHERE user_id = ?', (session['user_id'],)).fetchone()
+    session['wallet_balance'] = user['wallet_balance']
+
+    # Check for active vacation (tomorrow)
+    from datetime import timedelta
+    tomorrow = (date.today() + timedelta(days=1)).strftime('%Y-%m-%d')
+    vacation_active = db.execute('SELECT 1 FROM vacation_dates WHERE consumer_id = ? AND vacation_date = ?', 
+                                (session['user_id'], tomorrow)).fetchone()
+
     my_orders = db.execute('''
         SELECT o.*, f.farm_name, u.name as farmer_name, ml.price_per_litre
         FROM orders o
@@ -593,7 +622,8 @@ def consumer_dashboard():
                            my_orders=my_orders,
                            today=today,
                            max_distance=max_distance_km,
-                           user_location=session.get('user_location', ''))
+                           user_location=session.get('user_location', ''),
+                           vacation_active=vacation_active)
 
 
 # ─── Routes: Consumer place order ───────────────────────────────────────────────
@@ -647,17 +677,30 @@ def place_order(farmer_id):
 
         total_available = listing['total_quantity'] - ordered_already
 
+        total_price = quantity * listing['price_per_litre']
+
+        # Wallet check
+        user_wallet = db.execute('SELECT wallet_balance FROM users WHERE user_id = ?', (session['user_id'],)).fetchone()['wallet_balance']
+        
+        if total_price > user_wallet:
+            flash(f'Insufficient wallet balance. Total: Rs. {total_price:.2f}, Balance: Rs. {user_wallet:.2f}. Please recharge.', 'danger')
+            return redirect(url_for('wallet'))
+
         if quantity <= 0:
             flash('Please enter a valid quantity.', 'danger')
         elif quantity > total_available:
             flash(f'Not enough milk available. Only {total_available:.1f} litres remaining.', 'danger')
         else:
+            # Deduct from wallet
+            db.execute('UPDATE users SET wallet_balance = wallet_balance - ? WHERE user_id = ?', (total_price, session['user_id']))
+            db.execute('INSERT INTO wallet_transactions (user_id, amount, type, description) VALUES (?, ?, ?, ?)',
+                       (session['user_id'], -total_price, 'payment', f"Milk Order - {listing['date']}"))
+            
             db.execute(
                 'INSERT INTO orders (consumer_id, farmer_id, listing_id, quantity, order_date, status) VALUES (?, ?, ?, ?, ?, ?)',
                 (session['user_id'], farmer_id, listing_id, quantity, listing['date'], 'pending')
             )
             db.commit()
-            total_price = quantity * listing['price_per_litre']
             flash(f'Order placed successfully for {listing["date"]}! {quantity:.1f}L for Rs. {total_price:.2f}', 'success')
             return redirect(url_for('consumer_dashboard'))
 
@@ -862,6 +905,19 @@ def buy_product(product_id):
         return redirect(url_for('consumer_products'))
 
     total_price = quantity * product['price']
+    
+    # Wallet check
+    user_wallet = db.execute('SELECT wallet_balance FROM users WHERE user_id = ?', (session['user_id'],)).fetchone()['wallet_balance']
+    
+    if total_price > user_wallet:
+        flash(f'Insufficient wallet balance. Total: Rs. {total_price:.2f}, Balance: Rs. {user_wallet:.2f}. Please recharge.', 'danger')
+        return redirect(url_for('wallet'))
+
+    # Deduct from wallet
+    db.execute('UPDATE users SET wallet_balance = wallet_balance - ? WHERE user_id = ?', (total_price, session['user_id']))
+    db.execute('INSERT INTO wallet_transactions (user_id, amount, type, description) VALUES (?, ?, ?, ?)',
+               (session['user_id'], -total_price, 'payment', f"Bought {product['product_name']}"))
+
     db.execute(
         'INSERT INTO product_orders (consumer_id, product_id, quantity, total_price, order_date, status) VALUES (?, ?, ?, ?, ?, ?)',
         (session['user_id'], product_id, quantity, total_price, today, 'pending')
@@ -873,6 +929,67 @@ def buy_product(product_id):
     db.commit()
     flash(f'Order placed! {quantity} units of {product["product_name"]} for Rs. {total_price:.2f}', 'success')
     return redirect(url_for('consumer_products'))
+
+
+@app.route('/consumer/wallet', methods=['GET', 'POST'])
+@login_required
+@consumer_required
+def wallet():
+    db = get_db()
+    user_id = session['user_id']
+    
+    if request.method == 'POST':
+        amount = float(request.form.get('amount', 0))
+        if amount > 0:
+            db.execute('UPDATE users SET wallet_balance = wallet_balance + ? WHERE user_id = ?', (amount, user_id))
+            db.execute('INSERT INTO wallet_transactions (user_id, amount, type, description) VALUES (?, ?, ?, ?)',
+                       (user_id, amount, 'recharge', 'Wallet Recharge'))
+            db.commit()
+            flash(f'Successfully recharged Rs. {amount:.2f}!', 'success')
+            return redirect(url_for('wallet'))
+
+    user = db.execute('SELECT wallet_balance FROM users WHERE user_id = ?', (user_id,)).fetchone()
+    transactions = db.execute('''
+        SELECT * FROM wallet_transactions 
+        WHERE user_id = ? 
+        ORDER BY timestamp DESC
+    ''', (user_id,)).fetchall()
+    
+    return render_template('wallet.html', balance=user['wallet_balance'], transactions=transactions)
+
+
+@app.route('/consumer/vacation', methods=['GET', 'POST'])
+@login_required
+@consumer_required
+def vacation():
+    db = get_db()
+    user_id = session['user_id']
+    
+    if request.method == 'POST':
+        v_date = request.form['vacation_date']
+        # Check if already exists
+        exists = db.execute('SELECT 1 FROM vacation_dates WHERE consumer_id = ? AND vacation_date = ?', (user_id, v_date)).fetchone()
+        if not exists:
+            db.execute('INSERT INTO vacation_dates (consumer_id, vacation_date) VALUES (?, ?)', (user_id, v_date))
+            db.commit()
+            flash(f'Vacation set for {v_date}. Delivery will be paused.', 'info')
+        else:
+            flash('Date already set as vacation.', 'warning')
+        return redirect(url_for('vacation'))
+
+    dates = db.execute('SELECT * FROM vacation_dates WHERE consumer_id = ? ORDER BY vacation_date ASC', (user_id,)).fetchall()
+    return render_template('vacation.html', vacation_dates=dates)
+
+
+@app.route('/consumer/vacation/delete/<int:vacation_id>', methods=['POST'])
+@login_required
+@consumer_required
+def delete_vacation(vacation_id):
+    db = get_db()
+    db.execute('DELETE FROM vacation_dates WHERE vacation_id = ? AND consumer_id = ?', (vacation_id, session['user_id']))
+    db.commit()
+    flash('Vacation date removed.', 'success')
+    return redirect(url_for('vacation'))
 
 
 # ─── Init and run ────────────────────────────────────────────────────────────────
