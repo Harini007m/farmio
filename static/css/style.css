@@ -583,6 +583,22 @@ a:hover {
     }
 }
 
+/* ──── Text Visibility Overrides ────────────────────────────────────────────── */
+.text-white p,
+.text-white .lead {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.text-white .opacity-75 {
+    opacity: 0.75 !important;
+    color: rgba(255, 255, 255, 0.75) !important;
+}
+
+.text-white .opacity-100 {
+    opacity: 1 !important;
+    color: #ffffff !important;
+}
+
 /* ──── Bottom Mobile Navigation ──────────────────────────────────────────────── */
 .mobile-nav {
     display: none;
