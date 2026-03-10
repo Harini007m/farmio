@@ -23,84 +23,188 @@
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg">
         <div class="container">
-            <a class="navbar-brand" href="{{ url_for('index') }}">
+            <!-- Hamburger Button (Left Side) -->
+            <button class="navbar-toggler ms-0 border-0 shadow-none" type="button" data-bs-toggle="offcanvas"
+                data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <a class="navbar-brand shadow-none mx-auto" href="{{ url_for('index') }}">
                 <span class="brand-icon">F</span>
                 FarmIO
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
+
+            <!-- Desktop Menu (Hidden on mobile) -->
+            <div class="collapse navbar-collapse d-none d-lg-block" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center">
                     {% if session.get('user_id') %}
                     {% if session.get('role') == 'farmer' %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('farmer_dashboard') }}">Dashboard</a>
+                    <li class="nav-item"><a class="nav-link px-3" href="{{ url_for('farmer_dashboard') }}">Dashboard</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('add_milk') }}">Add Milk</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('farmer_orders') }}">Orders</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('farmer_products') }}">Products</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('farmer_subscriptions') }}">Subscriptions</a>
-                    </li>
+                    <li class="nav-item"><a class="nav-link px-3" href="{{ url_for('add_milk') }}">Add Milk</a></li>
+                    <li class="nav-item"><a class="nav-link px-3" href="{{ url_for('farmer_orders') }}">Orders</a></li>
                     {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('consumer_dashboard') }}">Home</a>
+                    <li class="nav-item"><a class="nav-link px-3" href="{{ url_for('consumer_dashboard') }}">Home</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('wallet') }}">
-                            <span
-                                class="badge bg-primary-soft text-primary rounded-pill px-3 py-2 border border-primary-subtle shadow-sm">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1">
-                                    <rect width="20" height="14" x="2" y="5" rx="2"></rect>
-                                    <line x1="2" y1="10" x2="22" y2="10"></line>
-                                </svg>
-                                Rs. {{ "%.2f"|format(session.get('wallet_balance', 0)) }}
-                            </span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('vacation') }}">Vacation</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('consumer_orders') }}">History</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('consumer_subscriptions') }}">Plans</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('consumer_products') }}">Boutique</a>
+                    <li class="nav-item"><a class="nav-link px-3" href="{{ url_for('wallet') }}">Wallet</a></li>
+                    <li class="nav-item"><a class="nav-link px-3" href="{{ url_for('consumer_products') }}">Dairy
+                            Shop</a>
                     </li>
                     {% endif %}
-                    <li class="nav-item ms-2">
-                        <span class="nav-link text-muted fw-semibold" style="font-size:0.85rem;">
-                            {{ session.get('user_name', '') }}
-                        </span>
-                    </li>
-                    <li class="nav-item ms-1">
-                        <a class="btn btn-outline-primary btn-sm rounded-pill px-3"
-                            href="{{ url_for('logout') }}">Logout</a>
-                    </li>
+                    <li class="nav-item ms-2"><a class="btn btn-outline-primary btn-sm rounded-pill px-4"
+                            href="{{ url_for('logout') }}">Logout</a></li>
                     {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('login') }}">Login</a>
-                    </li>
-                    <li class="nav-item ms-1">
-                        <a class="btn btn-primary btn-sm rounded-pill px-4 shadow-sm"
-                            href="{{ url_for('register') }}">Register</a>
-                    </li>
+                    <li class="nav-item"><a class="nav-link px-3" href="{{ url_for('login') }}">Login</a></li>
+                    <li class="nav-item ms-1"><a class="btn btn-primary btn-sm rounded-pill px-4 shadow-sm"
+                            href="{{ url_for('register') }}">Register</a></li>
                     {% endif %}
                 </ul>
             </div>
         </div>
     </nav>
+
+    <!-- Offcanvas Sidebar (Left) - Moved outside Navbar for better layout -->
+    <div class="offcanvas offcanvas-start border-0 shadow-lg" tabindex="-1" id="offcanvasNavbar"
+        aria-labelledby="offcanvasNavbarLabel" style="width: 290px;">
+        <div class="offcanvas-header border-bottom py-4 px-4 bg-white">
+            <h5 class="offcanvas-title fw-bold text-primary d-flex align-items-center" id="offcanvasNavbarLabel">
+                <span class="brand-icon d-inline-flex me-3"
+                    style="width:36px; height:36px; font-size:1.1rem; background: var(--p-600); color: white;">F</span>
+                Main Menu
+            </h5>
+            <button type="button" class="btn-close shadow-none" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-0 bg-white">
+            <div class="list-group list-group-flush pt-2">
+                {% if session.get('user_id') %}
+                <!-- User Status Card -->
+                <div class="px-4 py-4 bg-light bg-opacity-50 border-bottom mb-2">
+                    <div class="x-small text-muted fw-bold text-uppercase mb-1" style="letter-spacing: 0.1em;">
+                        Connected As</div>
+                    <div class="fw-bold text-dark h5 mb-1">{{ session.get('user_name', 'User') }}</div>
+                    <span class="badge bg-primary text-white rounded-pill px-3 py-1 fw-bold" style="font-size: 0.6rem;">
+                        {{ session.get('role', '')|upper }} ACCOUNT
+                    </span>
+                </div>
+
+                <!-- Main Menu Items: Listed One by One -->
+                {% if session.get('role') == 'farmer' %}
+                <a href="{{ url_for('farmer_dashboard') }}"
+                    class="list-group-item list-group-item-action border-0 py-4 px-4 d-flex align-items-center gap-3">
+                    <div class="bg-primary-soft text-primary p-2 rounded-xl"
+                        style="width: 42px; height: 42px; display: flex; align-items: center; justify-content: center;">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="3" y1="9" x2="21" y2="9"></line>
+                            <line x1="9" y1="21" x2="9" y2="9"></line>
+                        </svg>
+                    </div>
+                    <span class="fw-bold fs-6">Farmer Dashboard</span>
+                </a>
+                <a href="{{ url_for('add_milk') }}"
+                    class="list-group-item list-group-item-action border-0 py-4 px-4 d-flex align-items-center gap-3">
+                    <div class="bg-success-soft text-success p-2 rounded-xl"
+                        style="width: 42px; height: 42px; display: flex; align-items: center; justify-content: center;">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path d="M12 5v14M5 12h14"></path>
+                        </svg>
+                    </div>
+                    <span class="fw-bold fs-6">List New Milk</span>
+                </a>
+                <a href="{{ url_for('farmer_orders') }}"
+                    class="list-group-item list-group-item-action border-0 py-4 px-4 d-flex align-items-center gap-3">
+                    <div class="bg-warning-soft text-warning p-2 rounded-xl"
+                        style="width: 42px; height: 42px; display: flex; align-items: center; justify-content: center;">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4Z"></path>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                        </svg>
+                    </div>
+                    <span class="fw-bold fs-6">Customer Orders</span>
+                </a>
+                <a href="{{ url_for('farmer_products') }}"
+                    class="list-group-item list-group-item-action border-0 py-4 px-4 d-flex align-items-center gap-3">
+                    <div class="bg-info-soft text-info p-2 rounded-xl"
+                        style="width: 42px; height: 42px; display: flex; align-items: center; justify-content: center;">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                        </svg>
+                    </div>
+                    <span class="fw-bold fs-6">My Shop/Products</span>
+                </a>
+                {% else %}
+                <a href="{{ url_for('consumer_dashboard') }}"
+                    class="list-group-item list-group-item-action border-0 py-4 px-4 d-flex align-items-center gap-3">
+                    <div class="bg-primary-soft text-primary p-2 rounded-xl"
+                        style="width: 42px; height: 42px; display: flex; align-items: center; justify-content: center;">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path>
+                        </svg>
+                    </div>
+                    <span class="fw-bold fs-6">Find & Order Milk</span>
+                </a>
+                <a href="{{ url_for('consumer_products') }}"
+                    class="list-group-item list-group-item-action border-0 py-4 px-4 d-flex align-items-center gap-3">
+                    <div class="bg-warning-soft text-warning p-2 rounded-xl"
+                        style="width: 42px; height: 42px; display: flex; align-items: center; justify-content: center;">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4Z"></path>
+                        </svg>
+                    </div>
+                    <span class="fw-bold fs-6">Dairy Shop (Curd/Ghee)</span>
+                </a>
+                <a href="{{ url_for('wallet') }}"
+                    class="list-group-item list-group-item-action border-0 py-4 px-4 d-flex align-items-center gap-3">
+                    <div class="bg-success-soft text-success p-2 rounded-xl"
+                        style="width: 42px; height: 42px; display: flex; align-items: center; justify-content: center;">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                            <line x1="1" y1="10" x2="23" y2="10"></line>
+                        </svg>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="fw-bold fs-6">My Wallet Balance</div>
+                        <div class="x-small text-success fw-bold">Rs. {{ "%.2f"|format(session.get('wallet_balance', 0))
+                            }}</div>
+                    </div>
+                </a>
+                <a href="{{ url_for('consumer_orders') }}"
+                    class="list-group-item list-group-item-action border-0 py-4 px-4 d-flex align-items-center gap-3">
+                    <div class="bg-info-soft text-info p-2 rounded-xl"
+                        style="width: 42px; height: 42px; display: flex; align-items: center; justify-content: center;">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                        </svg>
+                    </div>
+                    <span class="fw-bold fs-6">My Order History</span>
+                </a>
+                {% endif %}
+
+                <!-- Footer/Logout within Offcanvas -->
+                <div class="px-4 py-5 mt-auto border-top">
+                    <a href="{{ url_for('logout') }}" class="btn btn-primary w-100 rounded-pill py-3 fw-bold shadow-md">
+                        Sign Out Account
+                    </a>
+                </div>
+                {% else %}
+                <a href="{{ url_for('login') }}"
+                    class="list-group-item list-group-item-action py-4 text-center fw-bold h5">Login</a>
+                <div class="p-4">
+                    <a href="{{ url_for('register') }}" class="btn btn-primary w-100 rounded-pill py-3 fw-bold">Register
+                        Now</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 
     <!-- Flash messages -->
     <div class="container mt-3">
@@ -167,6 +271,16 @@
                 <polyline points="9 22 9 12 15 12 15 22"></polyline>
             </svg>
             <span>Browse</span>
+        </a>
+        <a href="{{ url_for('consumer_products') }}"
+            class="mobile-nav-item {% if request.path == url_for('consumer_products') %}active{% endif %}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4Z"></path>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <path d="M16 10a4 4 0 01-8 0"></path>
+            </svg>
+            <span>Dairy Shop</span>
         </a>
         <a href="{{ url_for('consumer_orders') }}"
             class="mobile-nav-item {% if request.path == url_for('consumer_orders') %}active{% endif %}">

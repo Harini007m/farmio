@@ -701,7 +701,7 @@ def place_order(farmer_id):
                 (session['user_id'], farmer_id, listing_id, quantity, listing['date'], 'pending')
             )
             db.commit()
-            flash(f'Order placed successfully for {listing["date"]}! {quantity:.1f}L for Rs. {total_price:.2f}', 'success')
+            flash(f'Order placed successfully for {listing["date"]}! {quantity:.1f}L for Rs. {total_price:.2f}. Why not check our fresh Paneer & Ghee in the Dairy Shop?', 'success')
             return redirect(url_for('consumer_dashboard'))
 
     listing_data = []
@@ -927,7 +927,7 @@ def buy_product(product_id):
         (quantity, product_id)
     )
     db.commit()
-    flash(f'Order placed! {quantity} units of {product["product_name"]} for Rs. {total_price:.2f}', 'success')
+    flash(f'Order placed! {quantity} units of {product["product_name"]} for Rs. {total_price:.2f}. Track your delivery in the History tab!', 'success')
     return redirect(url_for('consumer_products'))
 
 

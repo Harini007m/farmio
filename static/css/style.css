@@ -543,23 +543,39 @@ a:hover {
 
     .navbar {
         padding: 0.75rem 0;
+        background: white !important;
+        border-bottom: 1px solid var(--s-100);
     }
 
-    .navbar-collapse {
-        background: white;
-        margin-top: 1rem;
-        padding: 1.5rem;
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-lg);
+    .offcanvas {
+        border-top-right-radius: 24px;
+        border-bottom-right-radius: 24px;
+        box-shadow: 10px 0 50px rgba(0, 0, 0, 0.15) !important;
+        width: 310px !important;
     }
 
-    .hero-section {
-        padding: 5rem 0;
-        text-align: center;
+    .bg-success-soft {
+        background: #f0fdf4;
     }
 
-    .hero-section h1 {
-        font-size: 2.75rem;
+    .text-success {
+        color: #16a34a !important;
+    }
+
+    .bg-warning-soft {
+        background: #fffbeb;
+    }
+
+    .text-warning {
+        color: #d97706 !important;
+    }
+
+    .bg-info-soft {
+        background: #f0f9ff;
+    }
+
+    .text-info {
+        color: #0284c7 !important;
     }
 
     .mobile-nav {
