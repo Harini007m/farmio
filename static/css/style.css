@@ -533,3 +533,114 @@ a:hover {
 .animate-fade {
     animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* ──── Mobile App Enhancements ───────────────────────────────────────────────── */
+@media (max-width: 991.98px) {
+    body {
+        padding-bottom: 70px;
+        /* Space for mobile nav */
+    }
+
+    .navbar {
+        padding: 0.75rem 0;
+    }
+
+    .navbar-collapse {
+        background: white;
+        margin-top: 1rem;
+        padding: 1.5rem;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .hero-section {
+        padding: 5rem 0;
+        text-align: center;
+    }
+
+    .hero-section h1 {
+        font-size: 2.75rem;
+    }
+
+    .mobile-nav {
+        display: flex !important;
+    }
+}
+
+/* ──── Bottom Mobile Navigation ──────────────────────────────────────────────── */
+.mobile-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-top: 1px solid var(--s-200);
+    padding: 0.5rem 0;
+    z-index: 1050;
+    justify-content: space-around;
+    align-items: center;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--s-500);
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    gap: 4px;
+    flex: 1;
+}
+
+.mobile-nav-item.active {
+    color: var(--p-600);
+}
+
+.mobile-nav-item svg {
+    width: 22px;
+    height: 22px;
+}
+
+/* ──── Native App Feel ───────────────────────────────────────────────────────── */
+.auth-card {
+    padding: 2rem;
+}
+
+.auth-card h2 {
+    font-size: 1.75rem;
+}
+
+.card {
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--s-100);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+}
+
+.list-group-item {
+    padding: 1rem 1.25rem;
+    border-color: var(--s-100);
+}
+
+/* Modern inputs for mobile */
+input[type="number"],
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    -webkit-appearance: none;
+    appearance: none;
+    font-size: 16px;
+    /* Prevent zoom on iOS */
+}
+
+/* PWA Splash Screen and safe areas */
+@supports (padding-top: env(safe-area-inset-top)) {
+    .navbar {
+        padding-top: calc(1.25rem + env(safe-area-inset-top));
+    }
+}

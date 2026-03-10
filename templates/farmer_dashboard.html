@@ -3,24 +3,29 @@
 
 {% block content %}
 <!-- Header Section -->
-<div class="page-header border-0 pb-4">
-    <div class="container animate-fade">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-2 small text-uppercase fw-bold letter-spacing-1">
-                <li class="breadcrumb-item"><a href="{{ url_for('index') }}"
-                        class="text-muted text-decoration-none">Home</a></li>
-                <li class="breadcrumb-item active text-primary" aria-current="page">Farmer Portal</li>
-            </ol>
-        </nav>
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3">
-            <div>
-                <h2 class="mb-1 fw-bold display-6">Farmer Dashboard</h2>
-                <p class="text-muted mb-0 lead small">Management console for <span class="text-primary fw-bold">{{
-                        farmer['farm_name'] }}</span></p>
+<div class="page-header border-0 pb-0 mb-5 overflow-hidden position-relative"
+    style="background: linear-gradient(to right, #ffffff, var(--p-50));">
+    <div class="container animate-fade py-5">
+        <div class="row align-items-center">
+            <div class="col-lg-7">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-3 small text-uppercase fw-bold letter-spacing-1">
+                        <li class="breadcrumb-item"><a href="{{ url_for('index') }}"
+                                class="text-muted text-decoration-none">Home</a></li>
+                        <li class="breadcrumb-item active text-primary" aria-current="page">Farmer Portal</li>
+                    </ol>
+                </nav>
+                <h1 class="mb-2 fw-bold display-5">Dashboard Overview</h1>
+                <p class="text-muted mb-0 lead-sm">
+                    Management console for <span class="text-dark fw-bold border-bottom border-primary border-2">{{
+                        farmer['farm_name'] }}</span>
+                </p>
             </div>
-            <div class="d-flex gap-2">
+            <div class="col-lg-5 text-lg-end mt-4 mt-lg-0">
                 <a href="{{ url_for('add_milk') }}"
-                    class="btn btn-primary rounded-pill px-4 btn-sm fw-bold shadow-premium">+ List New Milk</a>
+                    class="btn btn-primary rounded-pill px-5 py-3 fw-bold shadow-premium border-0 transition-all hover-up">
+                    <span class="me-2">+</span> List New Batch
+                </a>
             </div>
         </div>
     </div>
@@ -30,67 +35,83 @@
     <!-- Bento Metric Grid -->
     <div class="row g-4 mb-5 animate-fade" style="animation-delay: 0.1s;">
         <div class="col-lg-3 col-md-6">
-            <div class="summary-card border-0 shadow-premium h-100 transition-all hover-up">
-                <div class="summary-icon green">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <path d="m7.5 4.27 9 5.15"></path>
-                        <path
-                            d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z">
-                        </path>
-                        <path d="m3.3 7 8.7 5 8.7-5"></path>
-                        <path d="M12 22V12"></path>
-                    </svg>
-                </div>
-                <div class="summary-info">
-                    <h3 class="fw-bold mb-0 text-dark">{{ total_listed }} L</h3>
-                    <p class="text-muted x-small mb-0 fw-semibold text-uppercase letter-spacing-1">Total Listed</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="summary-card border-0 shadow-premium h-100 transition-all hover-up">
-                <div class="summary-icon blue">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="12" y1="1" x2="12" y2="23"></line>
-                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-                    </svg>
-                </div>
-                <div class="summary-info">
-                    <h3 class="fw-bold mb-0 text-dark">{{ total_ordered }} L</h3>
-                    <p class="text-muted x-small mb-0 fw-semibold text-uppercase letter-spacing-1">Total Sold</p>
+            <div class="card border-0 shadow-premium h-100 transition-all hover-up" style="border-radius: 24px;">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="bg-primary-soft text-primary p-3 rounded-2xl">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m7.5 4.27 9 5.15"></path>
+                                <path
+                                    d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z">
+                                </path>
+                                <path d="m3.3 7 8.7 5 8.7-5"></path>
+                                <path d="M12 22V12"></path>
+                            </svg>
+                        </div>
+                        <span class="x-small fw-bold text-muted text-uppercase letter-spacing-1">Supply</span>
+                    </div>
+                    <h3 class="fw-bold mb-1 text-dark">{{ total_listed }}<small class="text-muted ms-1 h6">L</small>
+                    </h3>
+                    <p class="text-muted x-small mb-0 fw-medium">Total Volume Listed</p>
                 </div>
             </div>
         </div>
         <div class="col-lg-3 col-md-6">
-            <div class="summary-card border-0 shadow-premium h-100 transition-all hover-up">
-                <div class="summary-icon orange">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 10V4a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6h18Z"></path>
-                        <path d="M3 10v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V10"></path>
-                    </svg>
-                </div>
-                <div class="summary-info">
-                    <h3 class="fw-bold mb-0 text-dark">{{ remaining }} L</h3>
-                    <p class="text-muted x-small mb-0 fw-semibold text-uppercase letter-spacing-1">On Shelf</p>
+            <div class="card border-0 shadow-premium h-100 transition-all hover-up" style="border-radius: 24px;">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="bg-primary-soft text-primary p-3 rounded-2xl">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="1" x2="12" y2="23"></line>
+                                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                            </svg>
+                        </div>
+                        <span class="x-small fw-bold text-muted text-uppercase letter-spacing-1">Sold</span>
+                    </div>
+                    <h3 class="fw-bold mb-1 text-dark">{{ total_ordered }}<small class="text-muted ms-1 h6">L</small>
+                    </h3>
+                    <p class="text-muted x-small mb-0 fw-medium">Volume Fulfilled</p>
                 </div>
             </div>
         </div>
         <div class="col-lg-3 col-md-6">
-            <div class="summary-card border-0 shadow-premium h-100 transition-all hover-up">
-                <div class="summary-icon red">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
-                        <path d="M3 6h18"></path>
-                        <path d="M16 10a4 4 0 0 1-8 0"></path>
-                    </svg>
+            <div class="card border-0 shadow-premium h-100 transition-all hover-up" style="border-radius: 24px;">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="bg-primary-soft text-primary p-3 rounded-2xl">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 10V4a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6h18Z"></path>
+                                <path d="M3 10v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V10"></path>
+                            </svg>
+                        </div>
+                        <span class="x-small fw-bold text-muted text-uppercase letter-spacing-1">Inventory</span>
+                    </div>
+                    <h3 class="fw-bold mb-1 text-dark">{{ remaining }}<small class="text-muted ms-1 h6">L</small></h3>
+                    <p class="text-muted x-small mb-0 fw-medium">Currently Available</p>
                 </div>
-                <div class="summary-info">
-                    <h3 class="fw-bold mb-0 text-dark">{{ today_orders|length }}</h3>
-                    <p class="text-muted x-small mb-0 fw-semibold text-uppercase letter-spacing-1">Active Orders</p>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card border-0 shadow-premium h-100 transition-all hover-up"
+                style="border-radius: 24px; background: linear-gradient(135deg, var(--p-600) 0%, var(--p-900) 100%); color: white;">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="bg-white bg-opacity-20 text-white p-3 rounded-2xl">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+                                <path d="M3 6h18"></path>
+                                <path d="M16 10a4 4 0 0 1-8 0"></path>
+                            </svg>
+                        </div>
+                        <span
+                            class="x-small fw-bold text-white opacity-50 text-uppercase letter-spacing-1">Active</span>
+                    </div>
+                    <h1 class="fw-bold mb-1 text-white">{{ today_orders|length }}</h1>
+                    <p class="text-white opacity-75 x-small mb-0 fw-medium">Open Fulfillment Tickets</p>
                 </div>
             </div>
         </div>
@@ -100,56 +121,57 @@
     <div class="row g-5">
         <div class="col-lg-8">
             <!-- Active Management -->
-            <div class="card border-0 shadow-premium mb-5 overflow-hidden animate-fade" style="animation-delay:0.2s;">
-                <div class="card-header bg-white border-bottom p-4">
-                    <div class="d-flex justify-content-between align-items-center">
+            <div class="card border-0 shadow-premium mb-5 overflow-hidden animate-fade"
+                style="animation-delay:0.2s; border-radius: 28px;">
+                <div class="card-header bg-white border-bottom p-4 d-flex justify-content-between align-items-center">
+                    <div>
                         <h5 class="mb-0 fw-bold">Daily Milk Inventory</h5>
-                        <span class="badge bg-light text-dark border px-3 py-2 rounded-pill small fst-normal fw-bold">{{
-                            today }}</span>
+                        <p class="text-muted x-small mb-0">Live status for {{ today }}</p>
                     </div>
+                    <a href="{{ url_for('add_milk') }}"
+                        class="text-primary x-small fw-bold text-uppercase text-decoration-none">+ New Listing</a>
                 </div>
                 <div class="card-body p-0">
                     {% if today_listings %}
                     <div class="table-responsive">
                         <table class="table table-hover mb-0 align-middle">
-                            <thead class="bg-light">
+                            <thead class="bg-light bg-opacity-50">
                                 <tr>
-                                    <th class="ps-4">Quantity</th>
-                                    <th>Price/L</th>
-                                    <th>Status</th>
-                                    <th class="text-end pe-4">Management</th>
+                                    <th class="ps-4 text-uppercase x-small fw-bold text-muted">Supply Volume</th>
+                                    <th class="text-uppercase x-small fw-bold text-muted">Pricing</th>
+                                    <th class="text-uppercase x-small fw-bold text-muted">Condition</th>
+                                    <th class="text-end pe-4 text-uppercase x-small fw-bold text-muted">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for listing in today_listings %}
                                 <tr>
-                                    <td class="ps-4">
+                                    <td class="ps-4 py-4">
                                         <div class="d-flex align-items-center gap-3">
-                                            <div class="bg-primary-soft p-1 rounded-circle border"
-                                                style="width: 44px; height:44px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                                            <div class="bg-primary-soft text-primary p-2 rounded-xl"
+                                                style="width: 48px; height: 48px; border: 1px solid var(--p-100);">
                                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                                    stroke="var(--p-600)" stroke-width="2" stroke-linecap="round"
+                                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                                     stroke-linejoin="round">
-                                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"></path>
-                                                    <path d="m9 12 2 2 4-4"></path>
+                                                    <path
+                                                        d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
                                                 </svg>
                                             </div>
                                             <div>
                                                 <div class="fw-bold text-dark">{{ listing['total_quantity'] }} Litres
                                                 </div>
-                                                <div class="text-muted x-small">Collection: {{
-                                                    listing['collection_time'] or 'Not Set' }}</div>
+                                                <div class="text-muted x-small">Fulfillment: {{
+                                                    listing['collection_time'] or 'Immediate' }}</div>
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="fw-bold text-dark">Rs. {{ listing['price_per_litre'] }}</td>
+                                    <td class="fw-bold text-dark">Rs. {{ listing['price_per_litre'] }}<small
+                                            class="text-muted fw-normal">/L</small></td>
                                     <td>
                                         {% if listing['is_closed'] %}
-                                        <span
-                                            class="badge bg-danger-soft text-danger px-3 py-2 rounded-pill small fw-bold">Closed</span>
+                                        <span class="badge-status cancelled">Closed</span>
                                         {% else %}
-                                        <span
-                                            class="badge bg-primary-soft text-primary px-3 py-2 rounded-pill small fw-bold">Live</span>
+                                        <span class="badge-status active">Live</span>
                                         {% endif %}
                                     </td>
                                     <td class="text-end pe-4">
@@ -157,8 +179,7 @@
                                             action="{{ url_for('toggle_listing', listing_id=listing['listing_id']) }}">
                                             <button type="submit"
                                                 class="btn {% if listing['is_closed'] %}btn-outline-primary{% else %}btn-outline-danger{% endif %} btn-sm rounded-pill px-4 fw-bold">
-                                                {% if listing['is_closed'] %}Open Inventory{% else %}Stop Selling{%
-                                                endif %}
+                                                {% if listing['is_closed'] %}Re-Open{% else %}Close Early{% endif %}
                                             </button>
                                         </form>
                                     </td>
@@ -168,52 +189,52 @@
                         </table>
                     </div>
                     {% else %}
-                    <div class="p-5 text-center">
-                        <div class="display-6 text-muted opacity-25 mb-3">
+                    <div class="p-5 text-center bg-light bg-opacity-25 mt-2">
+                        <div class="mb-4 text-muted opacity-25">
                             <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="m7.5 4.27 9 5.15"></path>
-                                <path
-                                    d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z">
-                                </path>
-                                <path d="m3.3 7 8.7 5 8.7-5"></path>
-                                <path d="M12 22V12"></path>
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" />
+                                <path d="m9 12 2 2 4-4" />
                             </svg>
                         </div>
-                        <p class="text-muted">No milk listings found for today.</p>
-                        <a href="{{ url_for('add_milk') }}" class="btn btn-primary rounded-pill px-4 btn-sm">Create
-                            First Listing</a>
+                        <h6 class="fw-bold">No active listings</h6>
+                        <p class="text-muted small mx-auto mb-4" style="max-width:300px;">Begin daily operations by
+                            listing your morning or evening milk batch.</p>
+                        <a href="{{ url_for('add_milk') }}"
+                            class="btn btn-primary rounded-pill px-5 py-2 fw-bold">Initialize Inventory</a>
                     </div>
                     {% endif %}
                 </div>
             </div>
 
             <!-- Recent Transactions -->
-            <div class="card border-0 shadow-premium animate-fade" style="animation-delay:0.3s;">
-                <div class="card-header bg-white border-bottom p-4">
-                    <h5 class="mb-0 fw-bold">Recent Milk Orders</h5>
+            <div class="card border-0 shadow-premium animate-fade" style="animation-delay:0.3s; border-radius: 28px;">
+                <div class="card-header bg-white border-bottom p-4 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold">Recent Fulfillment Stream</h5>
+                    <a href="{{ url_for('farmer_orders') }}"
+                        class="x-small fw-bold text-primary text-decoration-none">Full Ledger →</a>
                 </div>
                 <div class="card-body p-0">
                     {% if all_orders %}
                     <div class="table-responsive">
                         <table class="table table-hover mb-0 align-middle">
-                            <thead class="bg-light">
+                            <thead class="bg-light bg-opacity-50">
                                 <tr>
-                                    <th class="ps-4">Order ID & Date</th>
-                                    <th>Consumer</th>
-                                    <th>Quantity</th>
-                                    <th class="text-end pe-4">Status</th>
+                                    <th class="ps-4 text-uppercase x-small fw-bold text-muted">Transaction ID</th>
+                                    <th class="text-uppercase x-small fw-bold text-muted">Consumer Partner</th>
+                                    <th class="text-uppercase x-small fw-bold text-muted">Volume</th>
+                                    <th class="text-end pe-4 text-uppercase x-small fw-bold text-muted">Status</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for order in all_orders %}
-                                <tr>
-                                    <td class="ps-4">
+                                <tr class="border-bottom-0">
+                                    <td class="ps-4 py-4">
                                         <div class="fw-bold text-dark">#{{ order['order_id'] }}</div>
                                         <div class="text-muted x-small">{{ order['order_date'] }}</div>
                                     </td>
                                     <td class="fw-bold text-dark">{{ order['consumer_name'] }}</td>
-                                    <td>{{ order['quantity'] }} L</td>
+                                    <td class="fw-medium">{{ order['quantity'] }} Litres</td>
                                     <td class="text-end pe-4">
                                         <span class="badge-status {{ order['status'] }}">{{ order['status'] }}</span>
                                     </td>
@@ -223,71 +244,108 @@
                         </table>
                     </div>
                     {% else %}
-                    <div class="p-5 text-center text-muted small">No recent orders to show.</div>
+                    <div class="p-5 text-center text-muted small bg-light bg-opacity-25 mt-2">Waiting for first consumer
+                        connection today...</div>
                     {% endif %}
                 </div>
             </div>
         </div>
 
         <div class="col-lg-4">
-            <!-- Quick Navigation Menu -->
-            <div class="card border-0 shadow-premium mb-4 overflow-hidden animate-fade" style="animation-delay:0.4s;">
+            <!-- Strategic Navigation -->
+            <div class="card border-0 shadow-premium mb-5 overflow-hidden animate-fade"
+                style="animation-delay:0.4s; border-radius: 28px;">
                 <div class="card-header bg-white border-bottom p-4">
-                    <h6 class="mb-0 fw-bold text-uppercase small text-muted letter-spacing-1">Operations Control</h6>
+                    <h6 class="mb-0 fw-bold text-uppercase small text-muted letter-spacing-1">Operations Matrix</h6>
                 </div>
                 <div class="card-body p-0">
                     <div class="list-group list-group-flush">
                         <a href="{{ url_for('farmer_products') }}"
-                            class="list-group-item list-group-item-action p-4 d-flex justify-content-between align-items-center border-0">
-                            <div>
-                                <div class="fw-bold text-dark">Dairy Products</div>
-                                <div class="text-muted x-small">Paneer, Ghee, Butter processing</div>
+                            class="list-group-item list-group-item-action p-4 border-0 transition-all">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="bg-primary text-white p-2 rounded-xl">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round">
+                                            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+                                            <path d="M3 6h18" />
+                                            <path d="M16 10a4 4 0 0 1-8 0" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark">Value-Added Store</div>
+                                        <div class="text-muted x-small">Market dairy derivatives</div>
+                                    </div>
+                                </div>
+                                <span class="text-muted opacity-50">→</span>
                             </div>
-                            <span class="text-muted">→</span>
                         </a>
                         <a href="{{ url_for('farmer_subscriptions') }}"
-                            class="list-group-item list-group-item-action p-4 d-flex justify-content-between align-items-center border-0 border-top">
-                            <div>
-                                <div class="fw-bold text-dark">Subscriptions</div>
-                                <div class="text-muted x-small">Manage 21-day recurring plans</div>
+                            class="list-group-item list-group-item-action p-4 border-0 border-top transition-all">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="bg-primary text-white p-2 rounded-xl">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round">
+                                            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark">Active Subscriptions</div>
+                                        <div class="text-muted x-small">Manage continuity pipelines</div>
+                                    </div>
+                                </div>
+                                <span class="text-muted opacity-50">→</span>
                             </div>
-                            <span class="text-muted">→</span>
                         </a>
                         <a href="{{ url_for('farmer_orders') }}"
-                            class="list-group-item list-group-item-action p-4 d-flex justify-content-between align-items-center border-0 border-top">
-                            <div>
-                                <div class="fw-bold text-dark">Full History</div>
-                                <div class="text-muted x-small">Archive of all past milk sales</div>
+                            class="list-group-item list-group-item-action p-4 border-0 border-top transition-all">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="bg-primary text-white p-2 rounded-xl">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round">
+                                            <path d="M3 3h18v18H3zM21 9H3M21 15H3M9 3v18M15 3v18" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark">Operation History</div>
+                                        <div class="text-muted x-small">Access full delivery archive</div>
+                                    </div>
+                                </div>
+                                <span class="text-muted opacity-50">→</span>
                             </div>
-                            <span class="text-muted">→</span>
                         </a>
                     </div>
                 </div>
             </div>
 
-            <!-- Value Added Products Preview -->
+            <!-- Value Added Products Summary -->
             {% if products %}
-            <div class="card border-0 shadow-premium overflow-hidden animate-fade" style="animation-delay:0.5s;">
+            <div class="card border-0 shadow-premium overflow-hidden animate-fade"
+                style="animation-delay:0.5s; border-radius: 28px;">
                 <div class="card-header bg-white border-bottom p-4">
-                    <h6 class="mb-0 fw-bold text-uppercase small text-muted letter-spacing-1">Value-Added Inventory</h6>
+                    <h6 class="mb-0 fw-bold text-uppercase small text-muted letter-spacing-1">Marketplace Performance
+                    </h6>
                 </div>
-                <div class="card-body">
-                    <div class="row g-3">
-                        {% for product in products[:4] %}
-                        <div class="col-6">
-                            <div class="bg-light p-3 rounded-md text-center">
-                                <div class="fw-bold text-dark small text-truncate">{{ product['product_name'] }}</div>
-                                <div class="text-primary fw-bold small">Rs. {{ product['price'] }}</div>
-                                <div class="text-muted" style="font-size: 0.65rem;">Stock: {{ product['quantity'] }}
-                                </div>
+                <div class="card-body p-4">
+                    <div class="vstack gap-3 mb-4">
+                        {% for product in products[:3] %}
+                        <div
+                            class="d-flex align-items-center justify-content-between p-3 bg-light rounded-xl border border-white">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="bg-white rounded-circle" style="width: 6px; height: 6px;"></div>
+                                <div class="fw-bold text-dark x-small">{{ product['product_name'] }}</div>
                             </div>
+                            <div class="text-primary fw-bold x-small">Stock: {{ product['quantity'] }}</div>
                         </div>
                         {% endfor %}
                     </div>
-                    <div class="mt-4">
-                        <a href="{{ url_for('farmer_products') }}"
-                            class="btn btn-outline-primary btn-sm w-100 rounded-pill">Manage All Products</a>
-                    </div>
+                    <a href="{{ url_for('farmer_products') }}"
+                        class="btn btn-outline-primary btn-sm w-100 rounded-pill py-2 fw-bold">Manage Inventory</a>
                 </div>
             </div>
             {% endif %}
