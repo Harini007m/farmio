@@ -419,15 +419,28 @@ a:hover {
 
 .badge-status.active,
 .badge-status.completed,
-.badge-status.Delivered {
-    background-color: var(--p-50);
-    color: var(--p-700);
+.badge-status.Delivered,
+.badge-status.delivered {
+    background-color: #f0fdf4 !important;
+    color: #16a34a !important;
+}
+
+.badge-status.confirmed,
+.badge-status.Confirmed {
+    background-color: #ecfdf5 !important;
+    color: #059669 !important;
+}
+
+.badge-status.out_for_delivery,
+.badge-status.Out_for_Delivery {
+    background-color: #eff6ff !important;
+    color: #2563eb !important;
 }
 
 .badge-status.pending,
 .badge-status.Pending {
-    background-color: #fff7ed;
-    color: #c2410c;
+    background-color: #fff7ed !important;
+    color: #c2410c !important;
 }
 
 .badge-status.cancelled,

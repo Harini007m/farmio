@@ -18,6 +18,9 @@
                     {% if session.get('role') == 'farmer' %}
                     <a href="{{ url_for('farmer_dashboard') }}"
                         class="btn btn-primary btn-lg rounded-pill px-5 shadow-lg">Go to Dashboard</a>
+                    {% elif session.get('role') == 'delivery_partner' %}
+                    <a href="{{ url_for('delivery_dashboard') }}"
+                        class="btn btn-primary btn-lg rounded-pill px-5 shadow-lg">View Delivery Tasks</a>
                     {% else %}
                     <a href="{{ url_for('consumer_dashboard') }}"
                         class="btn btn-primary btn-lg rounded-pill px-5 shadow-lg">Browse Farmers</a>
@@ -175,7 +178,7 @@
             {% for step in [
             {'n': '01', 't': 'Onboarding', 'd': 'Farmers and Consumers verify locations for proximity matching.'},
             {'n': '02', 't': 'inventory', 'd': 'Real-time milk availability updated by farmers daily.'},
-            {'n': '03', 't': 'matching', 'd': 'Smart connection between customers and nearest supply.'},
+            {'n': '03', 't': 'Logistics', 'd': 'Delivery partners pick up fresh milk and deliver to your doorstep.'},
             {'n': '04', 't': 'Value-Add', 'd': 'Processing surplus into high-value dairy derivatives.'}
             ] %}
             <div class="col-6 col-md-3">

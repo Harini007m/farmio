@@ -43,6 +43,9 @@
                     </li>
                     <li class="nav-item"><a class="nav-link px-3" href="{{ url_for('add_milk') }}">Add Milk</a></li>
                     <li class="nav-item"><a class="nav-link px-3" href="{{ url_for('farmer_orders') }}">Orders</a></li>
+                    {% elif session.get('role') == 'delivery_partner' %}
+                    <li class="nav-item"><a class="nav-link px-3" href="{{ url_for('delivery_dashboard') }}">Dash</a>
+                    </li>
                     {% else %}
                     <li class="nav-item"><a class="nav-link px-3" href="{{ url_for('consumer_dashboard') }}">Home</a>
                     </li>
@@ -135,6 +138,20 @@
                         </svg>
                     </div>
                     <span class="fw-bold fs-6">My Shop/Products</span>
+                </a>
+                {% elif session.get('role') == 'delivery_partner' %}
+                <a href="{{ url_for('delivery_dashboard') }}"
+                    class="list-group-item list-group-item-action border-0 py-4 px-4 d-flex align-items-center gap-3">
+                    <div class="bg-primary-soft text-primary p-2 rounded-xl"
+                        style="width: 42px; height: 42px; display: flex; align-items: center; justify-content: center;">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path
+                                d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A10.003 10.003 0 0012 3v18l-1.954-2.102M12 3c3.517 0 6.799 1.009 9.571 2.753M19.529 8.11l.09.054a10.003 10.003 0 011.381 8.283L19 21">
+                            </path>
+                        </svg>
+                    </div>
+                    <span class="fw-bold fs-6">Delivery Dashboard</span>
                 </a>
                 {% else %}
                 <a href="{{ url_for('consumer_dashboard') }}"
@@ -261,6 +278,15 @@
                 <path d="M16 10a4 4 0 01-8 0"></path>
             </svg>
             <span>Orders</span>
+        </a>
+        {% elif session.get('role') == 'delivery_partner' %}
+        <a href="{{ url_for('delivery_dashboard') }}"
+            class="mobile-nav-item {% if request.path == url_for('delivery_dashboard') %}active{% endif %}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+            </svg>
+            <span>Delivery</span>
         </a>
         {% else %}
         <a href="{{ url_for('consumer_dashboard') }}"

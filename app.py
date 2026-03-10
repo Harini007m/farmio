@@ -39,7 +39,7 @@ def init_db():
             name TEXT NOT NULL,
             email TEXT UNIQUE NOT NULL,
             password TEXT NOT NULL,
-            role TEXT NOT NULL CHECK(role IN ('farmer', 'consumer')),
+            role TEXT NOT NULL CHECK(role IN ('farmer', 'consumer', 'delivery_partner')),
             location TEXT DEFAULT '',
             latitude REAL DEFAULT 0,
             longitude REAL DEFAULT 0,
@@ -134,6 +134,24 @@ def init_db():
             vacation_date TEXT NOT NULL,
             FOREIGN KEY (consumer_id) REFERENCES users(user_id)
         );
+
+        CREATE TABLE IF NOT EXISTS delivery_tasks (
+            delivery_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            order_id INTEGER NOT NULL,
+            pickup_location TEXT NOT NULL,
+            pickup_latitude REAL NOT NULL,
+            pickup_longitude REAL NOT NULL,
+            delivery_address TEXT NOT NULL,
+            delivery_latitude REAL NOT NULL,
+            delivery_longitude REAL NOT NULL,
+            quantity REAL NOT NULL,
+            delivery_partner_id INTEGER,
+            status TEXT DEFAULT 'Pending',
+            delivery_time TEXT,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (order_id) REFERENCES orders(order_id),
+            FOREIGN KEY (delivery_partner_id) REFERENCES users(user_id)
+        );
     ''')
     db.commit()
     db.close()
@@ -179,6 +197,16 @@ def consumer_required(f):
     def decorated(*args, **kwargs):
         if session.get('role') != 'consumer':
             flash('Access denied. Consumer account required.', 'danger')
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated
+
+
+def delivery_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if session.get('role') != 'delivery_partner':
+            flash('Access denied. Delivery Partner account required.', 'danger')
             return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated
@@ -275,6 +303,8 @@ def login():
                 if farmer:
                     session['farmer_id'] = farmer['farmer_id']
                 return redirect(url_for('farmer_dashboard'))
+            elif user['role'] == 'delivery_partner':
+                return redirect(url_for('delivery_dashboard'))
             else:
                 session['wallet_balance'] = user['wallet_balance']
                 return redirect(url_for('consumer_dashboard'))
@@ -696,12 +726,38 @@ def place_order(farmer_id):
             db.execute('INSERT INTO wallet_transactions (user_id, amount, type, description) VALUES (?, ?, ?, ?)',
                        (session['user_id'], -total_price, 'payment', f"Milk Order - {listing['date']}"))
             
-            db.execute(
+            cursor = db.execute(
                 'INSERT INTO orders (consumer_id, farmer_id, listing_id, quantity, order_date, status) VALUES (?, ?, ?, ?, ?, ?)',
                 (session['user_id'], farmer_id, listing_id, quantity, listing['date'], 'pending')
             )
+            order_id = cursor.lastrowid
+
+            # Create delivery task
+            # Get consumer info
+            consumer = db.execute('SELECT location, latitude, longitude FROM users WHERE user_id = ?', (session['user_id'],)).fetchone()
+            # Get farmer info (from users table via farmer_id)
+            farmer_user = db.execute('''
+                SELECT u.location, u.latitude, u.longitude 
+                FROM users u 
+                JOIN farmers f ON u.user_id = f.user_id 
+                WHERE f.farmer_id = ?
+            ''', (farmer_id,)).fetchone()
+
+            db.execute('''
+                INSERT INTO delivery_tasks (
+                    order_id, pickup_location, pickup_latitude, pickup_longitude, 
+                    delivery_address, delivery_latitude, delivery_longitude, 
+                    quantity, delivery_time, status
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                order_id, 
+                farmer_user['location'], farmer_user['latitude'], farmer_user['longitude'],
+                consumer['location'], consumer['latitude'], consumer['longitude'],
+                quantity, listing['collection_time'], 'Pending'
+            ))
+
             db.commit()
-            flash(f'Order placed successfully for {listing["date"]}! {quantity:.1f}L for Rs. {total_price:.2f}. Why not check our fresh Paneer & Ghee in the Dairy Shop?', 'success')
+            flash(f'Order placed successfully for {listing["date"]}! A delivery partner will be assigned soon.', 'success')
             return redirect(url_for('consumer_dashboard'))
 
     listing_data = []
@@ -990,6 +1046,108 @@ def delete_vacation(vacation_id):
     db.commit()
     flash('Vacation date removed.', 'success')
     return redirect(url_for('vacation'))
+
+
+# ─── Routes: Delivery Partner ──────────────────────────────────────────────────
+@app.route('/delivery/dashboard')
+@login_required
+@delivery_required
+def delivery_dashboard():
+    db = get_db()
+    user_id = session['user_id']
+    
+    # Available tasks (Pending)
+    available_tasks = db.execute('SELECT * FROM delivery_tasks WHERE status = "Pending"').fetchall()
+    
+    # My tasks (Accepted, Picked Up)
+    my_tasks = db.execute('''
+        SELECT * FROM delivery_tasks 
+        WHERE delivery_partner_id = ? AND status IN ("Accepted", "Picked Up")
+        ORDER BY status ASC
+    ''', (user_id,)).fetchall()
+    
+    # Completed tasks
+    completed_tasks = db.execute('''
+        SELECT * FROM delivery_tasks 
+        WHERE delivery_partner_id = ? AND status = "Delivered"
+        ORDER BY created_at DESC LIMIT 10
+    ''', (user_id,)).fetchall()
+    
+    # Simple Route Optimization for "My Tasks"
+    optimized_tasks = []
+    if my_tasks:
+        # Convert to list of dicts for sorting
+        task_list = [dict(t) for t in my_tasks]
+        
+        # Simple heuristic: Group by pickup location coordinates
+        # Then sort by delivery location coordinates
+        # This keeps nearby pickups together and optimizes delivery sequence
+        task_list.sort(key=lambda x: (x['pickup_latitude'], x['pickup_longitude'], x['delivery_latitude'], x['delivery_longitude']))
+        optimized_tasks = task_list
+    else:
+        optimized_tasks = my_tasks
+
+    return render_template('delivery_dashboard.html', 
+                           available_tasks=available_tasks,
+                           my_tasks=optimized_tasks,
+                           completed_tasks=completed_tasks)
+
+
+@app.route('/delivery/accept/<int:delivery_id>', methods=['POST'])
+@login_required
+@delivery_required
+def accept_delivery(delivery_id):
+    db = get_db()
+    db.execute('''
+        UPDATE delivery_tasks 
+        SET status = "Accepted", delivery_partner_id = ? 
+        WHERE delivery_id = ? AND status = "Pending"
+    ''', (session['user_id'], delivery_id))
+    db.commit()
+    flash('Delivery task accepted!', 'success')
+    return redirect(url_for('delivery_dashboard'))
+
+
+@app.route('/delivery/picked-up/<int:delivery_id>', methods=['POST'])
+@login_required
+@delivery_required
+def picked_up(delivery_id):
+    db = get_db()
+    db.execute('''
+        UPDATE delivery_tasks 
+        SET status = "Picked Up" 
+        WHERE delivery_id = ? AND delivery_partner_id = ?
+    ''', (delivery_id, session['user_id']))
+    
+    task = db.execute('SELECT order_id FROM delivery_tasks WHERE delivery_id = ?', (delivery_id,)).fetchone()
+    if task:
+        # Also update the main order status
+        db.execute('UPDATE orders SET status = "Out for Delivery" WHERE order_id = ?', (task['order_id'],))
+        
+    db.commit()
+    flash('Task marked as Picked Up! Consumer has been notified via order status.', 'info')
+    return redirect(url_for('delivery_dashboard'))
+
+
+@app.route('/delivery/delivered/<int:delivery_id>', methods=['POST'])
+@login_required
+@delivery_required
+def delivered(delivery_id):
+    db = get_db()
+    db.execute('''
+        UPDATE delivery_tasks 
+        SET status = "Delivered" 
+        WHERE delivery_id = ? AND delivery_partner_id = ?
+    ''', (delivery_id, session['user_id']))
+    
+    task = db.execute('SELECT order_id FROM delivery_tasks WHERE delivery_id = ?', (delivery_id,)).fetchone()
+    if task:
+        # Also update the main order status
+        db.execute('UPDATE orders SET status = "Delivered" WHERE order_id = ?', (task['order_id'],))
+        
+    db.commit()
+    flash('Delivery completed successfully! Order status updated for consumer.', 'success')
+    return redirect(url_for('delivery_dashboard'))
 
 
 # ─── Init and run ────────────────────────────────────────────────────────────────
