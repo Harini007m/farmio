@@ -298,7 +298,7 @@
                         <form action="{{ url_for('accept_delivery', delivery_id=task.delivery_id) }}" method="POST">
                             <button type="submit"
                                 class="btn btn-primary w-100 rounded-pill fw-bold py-2 shadow-sm d-flex align-items-center justify-content-center gap-2">
-                                ACCEPT TASK & RESERV ROUTE
+                                ACCEPT TASK & RESERVE ROUTE
                                 <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
                                     viewBox="0 0 24 24">
                                     <path d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
@@ -321,74 +321,96 @@
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script id="tasks-data" type="application/json">
+    {
+        "my_tasks": {{ my_tasks|tojson }},
+        "available_tasks": {{ available_tasks|tojson }}
+    }
+</script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Initialize map with a default view (or focus on active tasks)
+        // Initialize map
         var map = L.map('map').setView([22.5726, 88.3639], 12);
-
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
 
+        // Load data from JSON block
+        const dataElement = document.getElementById('tasks-data');
+        const data = JSON.parse(dataElement.textContent);
+        const myTasks = data.my_tasks || [];
+        const availableTasks = data.available_tasks || [];
+
         var markers = [];
 
         // Custom Icons
-        var pickupIcon = L.divIcon({
+        const pickupIcon = L.divIcon({
             className: 'custom-div-icon',
             html: "<div style='background-color:#2563eb; color:white; border-radius:50%; width:34px; height:34px; display:flex; align-items:center; justify-content:center; border:4px solid white; box-shadow:0 5px 15px rgba(37, 99, 235, 0.4); font-weight:800; font-size:12px;'>P</div>",
             iconSize: [34, 34],
             iconAnchor: [17, 17]
         });
 
-        var dropIcon = L.divIcon({
+        const dropIcon = L.divIcon({
             className: 'custom-div-icon',
             html: "<div style='background-color:#ff8c00; color:white; border-radius:50%; width:34px; height:34px; display:flex; align-items:center; justify-content:center; border:4px solid white; box-shadow:0 5px 15px rgba(255, 140, 0, 0.4); font-weight:800; font-size:12px;'>D</div>",
             iconSize: [34, 34],
             iconAnchor: [17, 17]
         });
 
-        {% if my_tasks %}
-        {% for task in my_tasks %}
-        // Pickup Marker
-        var p = L.marker([{{ task.pickup_latitude }}, {{ task.pickup_longitude }}], { icon: pickupIcon })
-        .addTo(map)
-        .bindPopup("<div class='p-2'><div class='fw-800 text-primary mb-1'>PICKUP POINT</div><div class='small'>{{ task.pickup_location }}</div></div>");
-    markers.push(p);
-
-    // Delivery Marker
-    var d = L.marker([{{ task.delivery_latitude }}, { { task.delivery_longitude } }], { icon: dropIcon })
+        if (myTasks.length > 0) {
+            myTasks.forEach(task => {
+                // Pickup Marker
+                const p = L.marker([task.pickup_latitude, task.pickup_longitude], { icon: pickupIcon })
                     .addTo(map)
-        .bindPopup("<div class='p-2'><div class='fw-800 text-orange mb-1'>DELIVERY POINT</div><div class='small'>{{ task.delivery_address }}</div></div>");
-    markers.push(d);
+                    .bindPopup(`<div class='p-2'><div class='fw-800 text-primary mb-1'>PICKUP POINT</div><div class='small'>${task.pickup_location}</div></div>`);
+                markers.push(p);
 
-    // Draw logical route line
-    L.polyline([
-        [{{ task.pickup_latitude }}, {{ task.pickup_longitude }}],
-        [{{ task.delivery_latitude }}, {{ task.delivery_longitude }}]
-    ], {
-        color: '#2563eb',
-        weight: 3,
-        dashArray: '8, 12',
-        opacity: 0.6
-    }).addTo(map);
-    {% endfor %}
+                // Delivery Marker
+                const d = L.marker([task.delivery_latitude, task.delivery_longitude], { icon: dropIcon })
+                    .addTo(map)
+                    .bindPopup(`<div class='p-2'><div class='fw-800 text-warning mb-1'>DELIVERY POINT</div><div class='small'>${task.delivery_address}</div></div>`);
+                markers.push(d);
 
-    // Adjust map to fit all markers
-    var group = new L.featureGroup(markers);
-    map.fitBounds(group.getBounds().pad(0.2));
-    {% else %}
-    // If no active tasks, maybe show available ones
-    {% for task in available_tasks %}
-    L.marker([{{ task.pickup_latitude }}, {{ task.pickup_longitude }}], {
-        icon: L.divIcon({
-            className: 'custom-div-icon',
-            html: "<div style='background-color:#94a3b8; color:white; border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center; border:3px solid white; box-shadow:0 2px 8px rgba(0,0,0,0.1); font-weight:bold; font-size:10px;'>!</div>",
-            iconSize: [24, 24],
-            iconAnchor: [12, 12]
-        })
-    }).addTo(map).bindPopup("Available Opportunity: {{ task.quantity }}L");
-    {% endfor %}
-    {% endif %}
+                // Draw logical route line
+                L.polyline([
+                    [task.pickup_latitude, task.pickup_longitude],
+                    [task.delivery_latitude, task.delivery_longitude]
+                ], {
+                    color: '#2563eb',
+                    weight: 3,
+                    dashArray: '8, 12',
+                    opacity: 0.6
+                }).addTo(map);
+            });
+
+            // Adjust map to fit markers
+            const group = new L.featureGroup(markers);
+            map.fitBounds(group.getBounds().pad(0.2));
+        } else if (availableTasks.length > 0) {
+            // Show available ones if no active
+            availableTasks.forEach(task => {
+                L.marker([task.pickup_latitude, task.pickup_longitude], {
+                    icon: L.divIcon({
+                        className: 'custom-div-icon',
+                        html: "<div style='background-color:#94a3b8; color:white; border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center; border:3px solid white; box-shadow:0 2px 8px rgba(0,0,0,0.1); font-weight:bold; font-size:10px;'>!</div>",
+                        iconSize: [24, 24],
+                        iconAnchor: [12, 12]
+                    })
+                }).addTo(map).bindPopup(`Available Opportunity: ${task.quantity}L`);
+                
+                // Also add to fitBounds
+                markers.push(L.marker([task.pickup_latitude, task.pickup_longitude]));
+            });
+            
+            if (markers.length > 0) {
+                const group = new L.featureGroup(markers);
+                map.fitBounds(group.getBounds().pad(0.2));
+            }
+        }
     });
 </script>
+
+
 {% endblock %}

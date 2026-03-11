@@ -541,10 +541,14 @@ def farmer_products():
 @farmer_required
 def delete_product(product_id):
     db = get_db()
-    db.execute('DELETE FROM products WHERE product_id = ? AND farmer_id = ?',
-               (product_id, session.get('farmer_id')))
-    db.commit()
-    flash('Product removed.', 'success')
+    try:
+        db.execute('DELETE FROM products WHERE product_id = ? AND farmer_id = ?',
+                   (product_id, session.get('farmer_id')))
+        db.commit()
+        flash('Product removed.', 'success')
+    except sqlite3.IntegrityError:
+        flash('Cannot delete this product because it has existing orders. Consider setting its quantity to 0 instead.', 'danger')
+    
     return redirect(url_for('farmer_products'))
 
 
@@ -1088,8 +1092,8 @@ def delivery_dashboard():
         optimized_tasks = my_tasks
 
     return render_template('delivery_dashboard.html', 
-                           available_tasks=available_tasks,
-                           my_tasks=optimized_tasks,
+                           available_tasks=[dict(t) for t in available_tasks],
+                           my_tasks=[dict(t) for t in optimized_tasks],
                            completed_tasks=completed_tasks)
 
 
