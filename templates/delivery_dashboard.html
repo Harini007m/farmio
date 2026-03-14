@@ -202,17 +202,30 @@
                     <div class="row g-3 mb-4">
                         <div class="col-6">
                             <div class="p-3 bg-light rounded-xl h-100">
-                                <div class="x-small text-muted fw-bold text-uppercase">Volume</div>
-                                <div class="fw-800 h5 mb-0">{{ task.quantity }} <span
-                                        class="small font-normal text-muted">Litres</span></div>
+                                <div class="x-small text-muted fw-bold text-uppercase">Item / Volume</div>
+                                <div class="fw-800 h6 mb-1 text-primary">{{ task.item_name }}</div>
+                                <div class="fw-bold h5 mb-0 text-dark">{{ task.quantity }} <span
+                                        class="small font-normal text-muted">{% if task.order_type == 'milk' %}Litres{% else %}Units{% endif %}</span></div>
                             </div>
                         </div>
                         <div class="col-6">
                             <div class="p-3 bg-light rounded-xl h-100">
                                 <div class="x-small text-muted fw-bold text-uppercase">Window</div>
-                                <div class="fw-800 h5 mb-0">{{ task.delivery_time or '06-08 AM' }}</div>
+                                <div class="fw-800 h5 mb-0 text-dark">{{ task.delivery_time or 'Anytime Today' }}</div>
                             </div>
                         </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <form action="{{ url_for('update_delivery_status', delivery_id=task.delivery_id) }}" method="POST" class="d-flex gap-2">
+                            <select name="status" class="form-select form-select-sm rounded-pill fw-bold bg-light border-0 px-3">
+                                <option value="Accepted" {% if task.status == 'Accepted' %}selected{% endif %}>Accepted (Confirmed)</option>
+                                <option value="Preparing" {% if task.status == 'Preparing' %}selected{% endif %}>Preparing</option>
+                                <option value="Picked Up" {% if task.status == 'Picked Up' %}selected{% endif %}>Picked Up (Out for Delivery)</option>
+                                <option value="Delivered" {% if task.status == 'Delivered' %}selected{% endif %}>Delivered</option>
+                            </select>
+                            <button type="submit" class="btn btn-dark btn-sm rounded-pill px-3 fw-bold">Update</button>
+                        </form>
                     </div>
 
                     <div class="d-grid gap-2">
@@ -279,7 +292,7 @@
                         <div class="d-flex justify-content-between align-items-start mb-3">
                             <div class="d-flex align-items-center gap-2">
                                 <div class="bg-primary text-white x-small fw-bold px-2 py-1 rounded">NEARBY</div>
-                                <h5 class="fw-800 mb-0 text-dark">{{ task.quantity }}L Supply Task</h5>
+                                <h5 class="fw-800 mb-0 text-dark">{{ task.item_name }} ({{ task.quantity }}{% if task.order_type == 'milk' %}L{% else %}U{% endif %})</h5>
                             </div>
                             <div class="text-end fw-bold text-primary">#{{ task.delivery_id }}</div>
                         </div>

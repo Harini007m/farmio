@@ -64,14 +64,26 @@
                                     Protocol</h6>
                             </div>
 
-                            <div class="mb-2">
+                            <div class="mb-3">
                                 <label for="collection_time" class="form-label x-small fw-bold text-muted">Batch Milking
                                     Time</label>
                                 <input type="time" class="form-control bg-white border-0 py-2 fw-semibold"
                                     id="collection_time" name="collection_time">
-                                <p class="x-small text-muted mt-2 mb-0">Providing precise milking time increases
-                                    transparency and consumer trust scores.</p>
                             </div>
+
+                            <div class="row g-3">
+                                <div class="col-6">
+                                    <label for="delivery_start_time" class="form-label x-small fw-bold text-muted">Delivery Start</label>
+                                    <input type="time" class="form-control bg-white border-0 py-2 fw-semibold"
+                                        id="delivery_start_time" name="delivery_start_time" value="07:00">
+                                </div>
+                                <div class="col-6">
+                                    <label for="delivery_end_time" class="form-label x-small fw-bold text-muted">Delivery End</label>
+                                    <input type="time" class="form-control bg-white border-0 py-2 fw-semibold"
+                                        id="delivery_end_time" name="delivery_end_time" value="09:00">
+                                </div>
+                            </div>
+                            <p class="x-small text-muted mt-2 mb-0">Providing precise times increases transparency and consumer trust scores.</p>
                         </div>
 
                         <div class="d-grid gap-3">

@@ -1,0 +1,340 @@
+{% extends 'base.html' %}
+{% block title %}Order History - FarmIO{% endblock %}
+
+{% block content %}
+<div class="page-header border-0 pb-4">
+    <div class="container animate-fade">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-3 small text-uppercase fw-bold letter-spacing-1">
+                <li class="breadcrumb-item"><a href="{{ url_for('consumer_dashboard') }}" class="text-muted text-decoration-none">Dashboard</a></li>
+                <li class="breadcrumb-item active text-primary" aria-current="page">Order History</li>
+            </ol>
+        </nav>
+        <h2 class="mb-1 fw-bold display-6">Your Fulfillment Archive</h2>
+        <p class="text-muted mb-0 lead small">Track status, reorder favorites, and rate your experience</p>
+    </div>
+</div>
+
+<div class="container pb-5">
+    <!-- Tab Navigation -->
+    <ul class="nav nav-pills mb-5 justify-content-center gap-3" id="historyTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active px-5 py-3 rounded-pill fw-bold shadow-sm" id="milk-tab" data-bs-toggle="pill" data-bs-target="#milk" type="button" role="tab" aria-controls="milk" aria-selected="true">
+                <svg width="20" height="20" fill="none" class="me-2" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 7h16M4 7a2 2 0 012-2h12a2 2 0 012 2M4 7v10a2 2 0 002 2h12a2 2 0 002-2V7M9 21v-4a2 2 0 012-2h2a2 2 0 012 2v4"></path></svg>
+                Milk History
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link px-5 py-3 rounded-pill fw-bold shadow-sm" id="products-tab" data-bs-toggle="pill" data-bs-target="#products" type="button" role="tab" aria-controls="products" aria-selected="false">
+                <svg width="20" height="20" fill="none" class="me-2" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                Product History
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="historyTabsContent">
+        <!-- Milk History Pane -->
+        <div class="tab-pane fade show active" id="milk" role="tabpanel" aria-labelledby="milk-tab">
+            {% if orders %}
+            <div class="vstack gap-4">
+                {% for order in orders %}
+                <div class="card border-0 shadow-premium animate-fade" style="border-radius: 24px; border: 1px solid rgba(0,0,0,0.05) !important;">
+                    <div class="card-body p-4 p-md-5">
+                        <div class="row align-items-center g-4">
+                            <!-- Order Info -->
+                            <div class="col-lg-4">
+                                <div class="d-flex align-items-center gap-3 mb-3">
+                                    <div class="bg-primary-soft text-primary p-3 rounded-2xl">
+                                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                            <path d="M4 7h16M4 7a2 2 0 012-2h12a2 2 0 012 2M4 7v10a2 2 0 002 2h12a2 2 0 002-2V7M9 21v-4a2 2 0 012-2h2a2 2 0 012 2v4"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h5 class="fw-bold mb-0">{{ order['farm_name'] }}</h5>
+                                        <p class="text-muted x-small text-uppercase fw-bold mb-0">ORDER #{{ order['order_id'] }} • {{ order['order_date'] }}</p>
+                                    </div>
+                                </div>
+                                <div class="p-3 bg-light rounded-xl border border-white">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="small text-muted">Volume Ordered</span>
+                                        <span class="fw-bold">{{ order['quantity'] }} Litres</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="small text-muted">Price Paid</span>
+                                        <span class="fw-bold">Rs. {{ "%.2f"|format(order['quantity'] * order['price_per_litre']) }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span class="small text-muted">Milking Time</span>
+                                        <span class="text-primary x-small fw-bold">{{ order['collection_time'] or 'Morning Batch' }}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Status Timeline -->
+                            <div class="col-lg-5">
+                                <div class="status-timeline-container px-md-4">
+                                    <h6 class="text-uppercase x-small fw-bold text-muted letter-spacing-1 mb-4">Fulfillment Journey</h6>
+                                    <div class="d-flex justify-content-between position-relative">
+                                        <!-- Progress Line -->
+                                        <div class="position-absolute top-50 start-0 translate-middle-y w-100 bg-light" style="height: 4px; z-index: 0;">
+                                            {% set progress_class = 'w-fulfillment-0' %}
+                                            {% if order['order_status'] == 'Delivered' %}
+                                                {% set progress_class = 'w-fulfillment-100' %}
+                                            {% elif order['order_status'] == 'Out for Delivery' %}
+                                                {% set progress_class = 'w-fulfillment-66' %}
+                                            {% elif order['order_status'] == 'Preparing' %}
+                                                {% set progress_class = 'w-fulfillment-33' %}
+                                            {% endif %}
+                                            <div class="bg-primary h-100 {{ progress_class }}" style="transition: width 1s ease;"></div>
+                                        </div>
+                                        
+                                        <!-- Steps -->
+                                        <div class="text-center position-relative z-1">
+                                            <div class="dot {% if order['order_status'] %}bg-primary{% else %}bg-light{% endif %} shadow-sm"></div>
+                                            <div class="x-small fw-bold mt-2 d-none d-md-block">Confirmed</div>
+                                        </div>
+                                        <div class="text-center position-relative z-1">
+                                            <div class="dot {% if order['order_status'] != 'Confirmed' %}bg-primary{% else %}bg-light{% endif %} shadow-sm"></div>
+                                            <div class="x-small fw-bold mt-2 d-none d-md-block">Preparing</div>
+                                        </div>
+                                        <div class="text-center position-relative z-1">
+                                            <div class="dot {% if order['order_status'] in ['Out for Delivery', 'Delivered'] %}bg-primary{% else %}bg-light{% endif %} shadow-sm"></div>
+                                            <div class="x-small fw-bold mt-2 d-none d-md-block">On the Way</div>
+                                        </div>
+                                        <div class="text-center position-relative z-1">
+                                            <div class="dot {% if order['order_status'] == 'Delivered' %}bg-success{% else %}bg-light{% endif %} shadow-sm"></div>
+                                            <div class="x-small fw-bold mt-2 d-none d-md-block">Delivered</div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-4 text-center">
+                                        <span class="badge-status {{ order['status'] }}">{{ order['status'] }}</span>
+                                        {% if order['order_status'] %}
+                                        <span class="ms-2 x-small text-muted fw-bold">Live Update: {{ order['order_status'] }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="col-lg-3">
+                                <div class="d-grid gap-3">
+                                    <form action="{{ url_for('reorder', order_id=order['order_id']) }}" method="POST">
+                                        <button type="submit" class="btn btn-primary w-100 rounded-pill py-3 fw-bold shadow-sm">Reorder Now</button>
+                                    </form>
+                                    
+                                    {% if order['status'] == 'Delivered' and not review_status.get(order['order_id']) %}
+                                    <button type="button" class="btn btn-outline-primary w-100 rounded-pill py-3 fw-bold" data-bs-toggle="modal" data-bs-target="#rateModal{{ order['order_id'] }}">Rate Experience</button>
+                                    {% elif review_status.get(order['order_id']) %}
+                                    <div class="text-center">
+                                        <span class="badge bg-success-soft text-success rounded-pill px-3 py-2 x-small fw-bold">Feedback Submitted</span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rating Modal -->
+                <div class="modal fade" id="rateModal{{ order['order_id'] }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content border-0 shadow-premium" style="border-radius: 28px;">
+                            <div class="modal-header border-0 p-4">
+                                <h5 class="modal-title fw-bold">Rate {{ order['farm_name'] }}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <form action="{{ url_for('rate_farmer', order_id=order['order_id']) }}" method="POST">
+                                <div class="modal-body p-4 pt-0">
+                                    <div class="text-center mb-4">
+                                        <div class="rating-stars h3">
+                                            <input type="radio" name="rating" value="1" id="star1{{ order.order_id }}" required hidden>
+                                            <label for="star1{{ order.order_id }}" class="cursor-pointer">⭐</label>
+                                            <input type="radio" name="rating" value="2" id="star2{{ order.order_id }}" hidden>
+                                            <label for="star2{{ order.order_id }}" class="cursor-pointer">⭐</label>
+                                            <input type="radio" name="rating" value="3" id="star3{{ order.order_id }}" hidden>
+                                            <label for="star3{{ order.order_id }}" class="cursor-pointer">⭐</label>
+                                            <input type="radio" name="rating" value="4" id="star4{{ order.order_id }}" hidden>
+                                            <label for="star4{{ order.order_id }}" class="cursor-pointer">⭐</label>
+                                            <input type="radio" name="rating" value="5" id="star5{{ order.order_id }}" hidden>
+                                            <label for="star5{{ order.order_id }}" class="cursor-pointer">⭐</label>
+                                        </div>
+                                        <p class="x-small text-muted mt-2">Tap to select your rating</p>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label x-small fw-bold text-muted text-uppercase">Comment (Optional)</label>
+                                        <textarea name="comment" class="form-control bg-light border-0 p-3" rows="3" placeholder="How was the milk freshness and delivery?" style="border-radius: 16px;"></textarea>
+                                    </div>
+                                </div>
+                                <div class="modal-footer border-0 p-4 pt-0">
+                                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">Submit Review</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="card border-0 shadow-premium p-5 text-center" style="border-radius: 30px;">
+                <div class="mb-4 text-muted opacity-25">
+                    <svg width="80" height="80" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                        <path d="M4 7h16M4 7a2 2 0 012-2h12a2 2 0 012 2M4 7v10a2 2 0 002 2h12a2 2 0 002-2V7M9 21v-4a2 2 0 012-2h2a2 2 0 012 2v4"></path>
+                    </svg>
+                </div>
+                <h5 class="fw-bold">No milk orders found</h5>
+                <p class="text-muted mx-auto mb-4" style="max-width: 400px;">Fresh, pure milk is just a few clicks away!</p>
+                <a href="{{ url_for('consumer_dashboard') }}" class="btn btn-primary rounded-pill px-5 py-3 fw-bold">Browse Listings</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Product History Pane -->
+        <div class="tab-pane fade" id="products" role="tabpanel" aria-labelledby="products-tab">
+            {% if product_orders %}
+            <div class="vstack gap-4">
+                {% for po in product_orders %}
+                <div class="card border-0 shadow-premium animate-fade" style="border-radius: 24px; border: 1px solid rgba(0,0,0,0.05) !important;">
+                    <div class="card-body p-4 p-md-5">
+                        <div class="row align-items-center g-4">
+                            <div class="col-lg-4">
+                                <div class="d-flex align-items-center gap-3 mb-3">
+                                    <div class="bg-primary-soft text-primary p-3 rounded-2xl">
+                                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                            <path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h5 class="fw-bold mb-0 text-capitalize">{{ po['product_name'] }}</h5>
+                                        <p class="text-muted x-small text-uppercase fw-bold mb-0">ORDER #P{{ po['product_order_id'] }} • {{ po['order_date'] }}</p>
+                                    </div>
+                                </div>
+                                <div class="p-3 bg-light rounded-xl border border-white">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="small text-muted">Provider</span>
+                                        <span class="fw-bold">{{ po['farm_name'] }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="small text-muted">Quantity</span>
+                                        <span class="fw-bold">{{ po['quantity'] }} Units</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span class="small text-muted">Total Value</span>
+                                        <span class="fw-bold">Rs. {{ "%.2f"|format(po['total_price']) }}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-5">
+                                <div class="status-timeline-container px-md-4">
+                                    <h6 class="text-uppercase x-small fw-bold text-muted letter-spacing-1 mb-4">Fulfillment Journey</h6>
+                                    <div class="d-flex justify-content-between position-relative">
+                                        <div class="position-absolute top-50 start-0 translate-middle-y w-100 bg-light" style="height: 4px; z-index: 0;">
+                                            {% set p_progress_class = 'w-fulfillment-0' %}
+                                            {% if po['order_status'] == 'Delivered' %}{% set p_progress_class = 'w-fulfillment-100' %}
+                                            {% elif po['order_status'] == 'Out for Delivery' %}{% set p_progress_class = 'w-fulfillment-66' %}
+                                            {% elif po['order_status'] == 'Preparing' %}{% set p_progress_class = 'w-fulfillment-33' %}{% endif %}
+                                            <div class="bg-primary h-100 {{ p_progress_class }}" style="transition: width 1s ease;"></div>
+                                        </div>
+                                        <div class="text-center position-relative z-1">
+                                            <div class="dot bg-primary shadow-sm"></div>
+                                            <div class="x-small fw-bold mt-2 d-none d-md-block">Confirmed</div>
+                                        </div>
+                                        <div class="text-center position-relative z-1">
+                                            <div class="dot {% if po['order_status'] != 'Confirmed' %}bg-primary{% else %}bg-light{% endif %} shadow-sm"></div>
+                                            <div class="x-small fw-bold mt-2 d-none d-md-block">Preparing</div>
+                                        </div>
+                                        <div class="text-center position-relative z-1">
+                                            <div class="dot {% if po['order_status'] in ['Out for Delivery', 'Delivered'] %}bg-primary{% else %}bg-light{% endif %} shadow-sm"></div>
+                                            <div class="x-small fw-bold mt-2 d-none d-md-block">On the Way</div>
+                                        </div>
+                                        <div class="text-center position-relative z-1">
+                                            <div class="dot {% if po['order_status'] == 'Delivered' %}bg-success{% else %}bg-light{% endif %} shadow-sm"></div>
+                                            <div class="x-small fw-bold mt-2 d-none d-md-block">Delivered</div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-4 text-center">
+                                        <span class="badge-status {{ po['status'] }}">{{ po['status'] }}</span>
+                                        {% if po['order_status'] %}
+                                        <span class="ms-2 x-small text-muted fw-bold">Live Update: {{ po['order_status'] }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-3 text-end">
+                                 <a href="{{ url_for('consumer_products') }}" class="btn btn-outline-primary rounded-pill px-4 fw-bold w-100 py-3">Inquire Reorder</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="card border-0 shadow-premium p-5 text-center" style="border-radius: 30px;">
+                <div class="mb-4 text-muted opacity-25">
+                    <svg width="80" height="80" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                        <path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                    </svg>
+                </div>
+                <h5 class="fw-bold">No product orders found</h5>
+                <p class="text-muted mx-auto mb-4" style="max-width: 400px;">Explore ghee, paneer, and more from your favorite farms!</p>
+                <a href="{{ url_for('consumer_products') }}" class="btn btn-primary rounded-pill px-5 py-3 fw-bold">Explore Products</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+</div>
+
+<style>
+    /* Tab Styling */
+    .nav-pills .nav-link {
+        color: #64748b;
+        background: #f8fafc;
+        border: 1px solid rgba(0,0,0,0.05);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .nav-pills .nav-link:hover {
+        background: #f1f5f9;
+        color: var(--bs-primary);
+    }
+    .nav-pills .nav-link.active {
+        background: var(--bs-primary) !important;
+        color: white !important;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(34, 197, 94, 0.2) !important;
+    }
+    .rounded-2xl { border-radius: 1rem; }
+    .bg-primary-soft { background-color: rgba(34, 197, 94, 0.1); }
+    
+    .dot {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        margin: 0 auto;
+        border: 3px solid white;
+    }
+    .cursor-pointer {
+        cursor: pointer;
+        filter: grayscale(1);
+        transition: all 0.2s;
+        font-size: 2rem;
+    }
+    .rating-stars input:checked ~ label,
+    .rating-stars label:hover,
+    .rating-stars label:hover ~ label {
+        filter: grayscale(0);
+    }
+    .bg-success-soft {
+        background: #d1fae5;
+    }
+    .bg-primary-soft {
+        background: #eff6ff;
+    }
+    .w-fulfillment-0 { width: 0%; }
+    .w-fulfillment-33 { width: 33.33%; }
+    .w-fulfillment-66 { width: 66.66%; }
+    .w-fulfillment-100 { width: 100%; }
+</style>
+{% endblock %}

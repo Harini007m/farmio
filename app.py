@@ -46,15 +46,6 @@ def init_db():
             wallet_balance REAL DEFAULT 0
         );
 
-        CREATE TABLE IF NOT EXISTS farmers (
-            farmer_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL UNIQUE,
-            farm_name TEXT NOT NULL,
-            location TEXT NOT NULL,
-            milk_capacity_per_day REAL DEFAULT 0,
-            price_per_litre REAL DEFAULT 0,
-            FOREIGN KEY (user_id) REFERENCES users(user_id)
-        );
 
         CREATE TABLE IF NOT EXISTS milk_listings (
             listing_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -63,6 +54,8 @@ def init_db():
             total_quantity REAL DEFAULT 0,
             price_per_litre REAL NOT NULL,
             collection_time TEXT DEFAULT '',
+            delivery_start_time TEXT DEFAULT '',
+            delivery_end_time TEXT DEFAULT '',
             delivery_estimate TEXT DEFAULT '',
             is_closed INTEGER DEFAULT 0,
             FOREIGN KEY (farmer_id) REFERENCES farmers(farmer_id)
@@ -76,9 +69,34 @@ def init_db():
             quantity REAL NOT NULL,
             order_date TEXT NOT NULL,
             status TEXT DEFAULT 'pending',
+            order_status TEXT DEFAULT 'Confirmed',
             FOREIGN KEY (consumer_id) REFERENCES users(user_id),
             FOREIGN KEY (farmer_id) REFERENCES farmers(farmer_id),
             FOREIGN KEY (listing_id) REFERENCES milk_listings(listing_id)
+        );
+
+        CREATE TABLE IF NOT EXISTS reviews (
+                review_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                order_id INTEGER NOT NULL,
+                consumer_id INTEGER NOT NULL,
+                farmer_id INTEGER NOT NULL,
+                rating INTEGER NOT NULL,
+                comment TEXT,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (order_id) REFERENCES orders(order_id),
+                FOREIGN KEY (consumer_id) REFERENCES users(user_id),
+                FOREIGN KEY (farmer_id) REFERENCES farmers(farmer_id)
+        );
+
+        CREATE TABLE IF NOT EXISTS farmers (
+            farmer_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL UNIQUE,
+            farm_name TEXT NOT NULL,
+            location TEXT NOT NULL,
+            milk_capacity_per_day REAL DEFAULT 0,
+            price_per_litre REAL DEFAULT 0,
+            trust_score REAL DEFAULT 0,
+            FOREIGN KEY (user_id) REFERENCES users(user_id)
         );
 
         CREATE TABLE IF NOT EXISTS products (
@@ -99,6 +117,7 @@ def init_db():
             total_price REAL NOT NULL,
             order_date TEXT NOT NULL,
             status TEXT DEFAULT 'pending',
+            order_status TEXT DEFAULT 'Confirmed',
             FOREIGN KEY (consumer_id) REFERENCES users(user_id),
             FOREIGN KEY (product_id) REFERENCES products(product_id)
         );
@@ -137,7 +156,9 @@ def init_db():
 
         CREATE TABLE IF NOT EXISTS delivery_tasks (
             delivery_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            order_id INTEGER NOT NULL,
+            order_id INTEGER,
+            product_order_id INTEGER,
+            order_type TEXT DEFAULT 'milk',
             pickup_location TEXT NOT NULL,
             pickup_latitude REAL NOT NULL,
             pickup_longitude REAL NOT NULL,
@@ -150,12 +171,38 @@ def init_db():
             delivery_time TEXT,
             created_at TEXT DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (order_id) REFERENCES orders(order_id),
+            FOREIGN KEY (product_order_id) REFERENCES product_orders(product_order_id),
             FOREIGN KEY (delivery_partner_id) REFERENCES users(user_id)
         );
     ''')
     db.commit()
     db.close()
 
+
+# ─── Trust Score Calculation ──────────────────────────────────────────────────
+def calculate_trust_score(farmer_id):
+    db = get_db()
+    # 1. Average buyer rating
+    avg_rating = db.execute('SELECT AVG(rating) FROM reviews WHERE farmer_id = ?', (farmer_id,)).fetchone()[0]
+    avg_rating = avg_rating if avg_rating else 0
+    
+    # 2. Successful completed deliveries
+    completed_deliveries = db.execute('SELECT COUNT(*) FROM delivery_tasks dt JOIN orders o ON dt.order_id = o.order_id WHERE o.farmer_id = ? AND dt.status = "Delivered"', (farmer_id,)).fetchone()[0]
+    
+    # 3. Total completed orders
+    total_orders = db.execute('SELECT COUNT(*) FROM orders WHERE farmer_id = ?', (farmer_id,)).fetchone()[0]
+    
+    # Score calculation logic:
+    # (AVG_RATING / 5) * 50 + (COMPLETED_DELIVERIES / TOTAL_ORDERS if TOTAL_ORDERS > 0 else 0) * 50
+    rating_score = (avg_rating / 5) * 50
+    delivery_score = (completed_deliveries / total_orders * 50) if total_orders > 0 else 0
+    
+    trust_score = round(rating_score + delivery_score, 1)
+    
+    # Update cache in farmers table
+    db.execute('UPDATE farmers SET trust_score = ? WHERE farmer_id = ?', (trust_score, farmer_id))
+    db.commit()
+    return trust_score
 
 # ─── Haversine distance (km) ────────────────────────────────────────────────────
 def haversine(lat1, lon1, lat2, lon2):
@@ -378,6 +425,41 @@ def farmer_dashboard():
         LIMIT 20
     ''', (farmer_id,)).fetchall()
 
+    # Analytics for Feature 4
+    today_orders_count = db.execute('SELECT COUNT(*) FROM orders WHERE farmer_id = ? AND order_date = ?', (farmer_id, today)).fetchone()[0]
+    today_milk_sold = db.execute('SELECT SUM(quantity) FROM orders WHERE farmer_id = ? AND order_date = ?', (farmer_id, today)).fetchone()[0] or 0
+    today_revenue = db.execute('''
+        SELECT SUM(o.quantity * ml.price_per_litre) 
+        FROM orders o 
+        JOIN milk_listings ml ON o.listing_id = ml.listing_id 
+        WHERE o.farmer_id = ? AND o.order_date = ?
+    ''', (farmer_id, today)).fetchone()[0] or 0
+    
+    # Orders this week
+    from datetime import timedelta
+    last_week = (date.today() - timedelta(days=7)).strftime('%Y-%m-%d')
+    week_orders_count = db.execute('SELECT COUNT(*) FROM orders WHERE farmer_id = ? AND order_date >= ?', (farmer_id, last_week)).fetchone()[0]
+
+    # Chart data (last 7 days)
+    daily_sales_data = []
+    weekly_revenue_data = []
+    days = []
+    for i in range(6, -1, -1):
+        d = (date.today() - timedelta(days=i)).strftime('%Y-%m-%d')
+        days.append(d)
+        sales = db.execute('SELECT SUM(quantity) FROM orders WHERE farmer_id = ? AND order_date = ?', (farmer_id, d)).fetchone()[0] or 0
+        rev = db.execute('''
+            SELECT SUM(o.quantity * ml.price_per_litre) 
+            FROM orders o 
+            JOIN milk_listings ml ON o.listing_id = ml.listing_id 
+            WHERE o.farmer_id = ? AND o.order_date = ?
+        ''', (farmer_id, d)).fetchone()[0] or 0
+        daily_sales_data.append(sales)
+        weekly_revenue_data.append(rev)
+
+    # Trust Score
+    trust_score = calculate_trust_score(farmer_id)
+
     return render_template('farmer_dashboard.html',
                            farmer=farmer,
                            today_listings=today_listings,
@@ -388,7 +470,15 @@ def farmer_dashboard():
                            all_orders=all_orders,
                            products=products,
                            product_orders=product_orders,
-                           today=today)
+                           today=today,
+                           today_orders_count=today_orders_count,
+                           today_milk_sold=today_milk_sold,
+                           today_revenue=today_revenue,
+                           week_orders_count=week_orders_count,
+                           days=days,
+                           daily_sales_data=daily_sales_data,
+                           weekly_revenue_data=weekly_revenue_data,
+                           trust_score=trust_score)
 
 
 # ─── Routes: Add milk listing ───────────────────────────────────────────────────
@@ -402,11 +492,14 @@ def add_milk():
         total_qty = float(request.form.get('total_quantity', 0) or 0)
         price = float(request.form['price_per_litre'])
         collection_time = request.form.get('collection_time', '').strip()
+        delivery_start = request.form.get('delivery_start_time', '').strip()
+        delivery_end = request.form.get('delivery_end_time', '').strip()
+
         db = get_db()
-        db.execute(
-            'INSERT INTO milk_listings (farmer_id, date, total_quantity, price_per_litre, collection_time) VALUES (?, ?, ?, ?, ?)',
-            (farmer_id, listing_date, total_qty, price, collection_time)
-        )
+        db.execute('''
+            INSERT INTO milk_listings (farmer_id, date, total_quantity, price_per_litre, collection_time, delivery_start_time, delivery_end_time) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ''', (farmer_id, listing_date, total_qty, price, collection_time, delivery_start, delivery_end))
         db.commit()
         flash('Milk listing added successfully!', 'success')
         return redirect(url_for('farmer_dashboard'))
@@ -563,7 +656,7 @@ def consumer_dashboard():
     # Consumer's coordinates from session
     consumer_lat = session.get('user_lat', 0)
     consumer_lng = session.get('user_lng', 0)
-    max_distance_km = 7  # Show farmers within 7 km
+    max_distance_km = 25  # Increased radius for Feature 6 (20-30 km)
 
     farmers = db.execute('''
         SELECT f.*, u.name as farmer_name, u.latitude as farmer_lat, u.longitude as farmer_lng,
@@ -579,14 +672,16 @@ def consumer_dashboard():
     # Get freshness info for today's listings per farmer
     freshness_map = {}
     all_listings = db.execute('''
-        SELECT farmer_id, collection_time
-        FROM milk_listings WHERE date = ? AND collection_time != ''
+        SELECT farmer_id, collection_time, delivery_start_time, delivery_end_time
+        FROM milk_listings WHERE date = ?
         ORDER BY listing_id DESC
     ''', (today,)).fetchall()
     for fl in all_listings:
         if fl['farmer_id'] not in freshness_map:
             freshness_map[fl['farmer_id']] = {
-                'collection_time': fl['collection_time']
+                'collection_time': fl['collection_time'],
+                'delivery_start': fl['delivery_start_time'],
+                'delivery_end': fl['delivery_end_time']
             }
 
     farmer_list = []
@@ -598,10 +693,10 @@ def consumer_dashboard():
         if consumer_lat != 0 and consumer_lng != 0 and farmer_lat != 0 and farmer_lng != 0:
             dist = haversine(consumer_lat, consumer_lng, farmer_lat, farmer_lng)
         else:
-            dist = 0  # If coordinates missing, show by default
+            dist = 0 if consumer_lat == 0 else 999  # If consumer has loc but farmer doesn't
 
         # Only include farmers within the max distance and NOT closed
-        if dist <= max_distance_km or consumer_lat == 0 or farmer_lat == 0:
+        if dist <= max_distance_km or consumer_lat == 0:
             total_avail = f['total_available'] or 0
             total_ord = f['total_ordered'] or 0
             remaining = total_avail - total_ord
@@ -621,10 +716,12 @@ def consumer_dashboard():
                     'location': f['location'],
                     'milk_capacity_per_day': f['milk_capacity_per_day'],
                     'price_per_litre': f['price_per_litre'],
+                    'trust_score': f['trust_score'] or 0,
                     'total_available': total_avail,
                     'remaining': max(0, remaining),
                     'distance_km': round(dist, 1),
-                    'collection_time': freshness.get('collection_time', '')
+                    'collection_time': freshness.get('collection_time', ''),
+                    'delivery_window': f"{freshness.get('delivery_start', '07:00 AM')} - {freshness.get('delivery_end', '09:00 AM')}"
                 })
 
     # Sort by distance (nearest first)
@@ -641,14 +738,14 @@ def consumer_dashboard():
                                 (session['user_id'], tomorrow)).fetchone()
 
     my_orders = db.execute('''
-        SELECT o.*, f.farm_name, u.name as farmer_name, ml.price_per_litre
+        SELECT o.*, f.farm_name, u.name as farmer_name, ml.price_per_litre, ml.collection_time, ml.delivery_start_time, ml.delivery_end_time
         FROM orders o
         JOIN farmers f ON o.farmer_id = f.farmer_id
         JOIN users u ON f.user_id = u.user_id
         JOIN milk_listings ml ON o.listing_id = ml.listing_id
         WHERE o.consumer_id = ?
         ORDER BY o.order_id DESC
-        LIMIT 10
+        LIMIT 5
     ''', (session['user_id'],)).fetchall()
 
     return render_template('consumer_dashboard.html',
@@ -658,6 +755,66 @@ def consumer_dashboard():
                            max_distance=max_distance_km,
                            user_location=session.get('user_location', ''),
                            vacation_active=vacation_active)
+
+@app.route('/consumer/order-history')
+@login_required
+@consumer_required
+def order_history_redirect():
+    return redirect(url_for('consumer_orders'))
+
+@app.route('/consumer/reorder/<int:order_id>', methods=['POST'])
+@login_required
+@consumer_required
+def reorder(order_id):
+    db = get_db()
+    old_order = db.execute('SELECT * FROM orders WHERE order_id = ? AND consumer_id = ?', (order_id, session['user_id'])).fetchone()
+    if not old_order:
+        flash('Order not found.', 'danger')
+        return redirect(url_for('consumer_orders'))
+    
+    # Check if farmer has a listing for today
+    today = str(date.today())
+    listing = db.execute('SELECT * FROM milk_listings WHERE farmer_id = ? AND date = ? AND is_closed = 0', (old_order['farmer_id'], today)).fetchone()
+    
+    if not listing:
+        flash('Farmer does not have an open listing for today.', 'warning')
+        return redirect(url_for('consumer_dashboard'))
+    
+    # Reuse place_order logic (simplified)
+    # Normally we'd redirect to a confirmation page or just place it if balance exists
+    return redirect(url_for('place_order', farmer_id=old_order['farmer_id']))
+
+
+@app.route('/consumer/rate-farmer/<int:order_id>', methods=['POST'])
+@login_required
+@consumer_required
+def rate_farmer(order_id):
+    db = get_db()
+    rating = int(request.form['rating'])
+    comment = request.form.get('comment', '')
+    
+    order = db.execute('SELECT * FROM orders WHERE order_id = ? AND consumer_id = ?', (order_id, session['user_id'])).fetchone()
+    if not order:
+        flash('Order not found.', 'danger')
+        return redirect(url_for('consumer_orders'))
+    
+    # Check if already reviewed
+    exists = db.execute('SELECT 1 FROM reviews WHERE order_id = ?', (order_id,)).fetchone()
+    if exists:
+        flash('You have already rated this order.', 'warning')
+        return redirect(url_for('consumer_orders'))
+    
+    db.execute('''
+        INSERT INTO reviews (order_id, consumer_id, farmer_id, rating, comment)
+        VALUES (?, ?, ?, ?, ?)
+    ''', (order_id, session['user_id'], order['farmer_id'], rating, comment))
+    db.commit()
+    
+    # Recalculate trust score
+    calculate_trust_score(order['farmer_id'])
+    
+    flash('Thank you for your feedback!', 'success')
+    return redirect(url_for('consumer_orders'))
 
 
 # ─── Routes: Consumer place order ───────────────────────────────────────────────
@@ -793,9 +950,8 @@ def place_order(farmer_id):
 @consumer_required
 def consumer_orders():
     db = get_db()
-
     orders = db.execute('''
-        SELECT o.*, f.farm_name, u.name as farmer_name, ml.price_per_litre
+        SELECT o.*, f.farm_name, u.name as farmer_name, ml.price_per_litre, ml.collection_time, ml.delivery_start_time, ml.delivery_end_time
         FROM orders o
         JOIN farmers f ON o.farmer_id = f.farmer_id
         JOIN users u ON f.user_id = u.user_id
@@ -803,7 +959,7 @@ def consumer_orders():
         WHERE o.consumer_id = ?
         ORDER BY o.order_id DESC
     ''', (session['user_id'],)).fetchall()
-
+    
     product_orders = db.execute('''
         SELECT po.*, p.product_name, f.farm_name, u.name as farmer_name
         FROM product_orders po
@@ -814,9 +970,16 @@ def consumer_orders():
         ORDER BY po.product_order_id DESC
     ''', (session['user_id'],)).fetchall()
 
-    return render_template('orders.html',
-                           orders=orders,
+    # Check if reviewed
+    review_status = {}
+    reviews = db.execute('SELECT order_id FROM reviews WHERE consumer_id = ?', (session['user_id'],)).fetchall()
+    for r in reviews:
+        review_status[r['order_id']] = True
+
+    return render_template('order_history.html', 
+                           orders=orders, 
                            product_orders=product_orders,
+                           review_status=review_status,
                            role='consumer')
 
 
@@ -978,16 +1141,43 @@ def buy_product(product_id):
     db.execute('INSERT INTO wallet_transactions (user_id, amount, type, description) VALUES (?, ?, ?, ?)',
                (session['user_id'], -total_price, 'payment', f"Bought {product['product_name']}"))
 
-    db.execute(
+    cursor = db.execute(
         'INSERT INTO product_orders (consumer_id, product_id, quantity, total_price, order_date, status) VALUES (?, ?, ?, ?, ?, ?)',
         (session['user_id'], product_id, quantity, total_price, today, 'pending')
     )
+    product_order_id = cursor.lastrowid
+
     db.execute(
         'UPDATE products SET quantity = quantity - ? WHERE product_id = ?',
         (quantity, product_id)
     )
+
+    # Create delivery task for value-added product
+    # Get consumer info
+    consumer = db.execute('SELECT location, latitude, longitude FROM users WHERE user_id = ?', (session['user_id'],)).fetchone()
+    # Get farmer info (from users table via product.farmer_id)
+    farmer_user = db.execute('''
+        SELECT u.location, u.latitude, u.longitude 
+        FROM users u 
+        JOIN farmers f ON u.user_id = f.user_id 
+        WHERE f.farmer_id = ?
+    ''', (product['farmer_id'],)).fetchone()
+
+    db.execute('''
+        INSERT INTO delivery_tasks (
+            product_order_id, order_type, pickup_location, pickup_latitude, pickup_longitude, 
+            delivery_address, delivery_latitude, delivery_longitude, 
+            quantity, status
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (
+        product_order_id, 'product',
+        farmer_user['location'], farmer_user['latitude'], farmer_user['longitude'],
+        consumer['location'], consumer['latitude'], consumer['longitude'],
+        quantity, 'Pending'
+    ))
+
     db.commit()
-    flash(f'Order placed! {quantity} units of {product["product_name"]} for Rs. {total_price:.2f}. Track your delivery in the History tab!', 'success')
+    flash(f'Order placed! {quantity} units of {product["product_name"]} for Rs. {total_price:.2f}. A delivery partner will be assigned soon.', 'success')
     return redirect(url_for('consumer_products'))
 
 
@@ -1060,22 +1250,47 @@ def delivery_dashboard():
     db = get_db()
     user_id = session['user_id']
     
-    # Available tasks (Pending)
-    available_tasks = db.execute('SELECT * FROM delivery_tasks WHERE status = "Pending"').fetchall()
+    # Updated task fetching to join with either orders or product_orders
+    def get_enriched_tasks(base_query, params=()):
+        tasks = db.execute(base_query, params).fetchall()
+        enriched = []
+        for t in tasks:
+            task_dict = dict(t)
+            if t['order_type'] == 'milk':
+                order_info = db.execute('''
+                    SELECT f.farm_name, u.name as consumer_name, 'Fresh Milk' as item_name
+                    FROM orders o
+                    JOIN farmers f ON o.farmer_id = f.farmer_id
+                    JOIN users u ON o.consumer_id = u.user_id
+                    WHERE o.order_id = ?
+                ''', (t['order_id'],)).fetchone()
+                task_dict.update(dict(order_info) if order_info else {})
+            else:
+                order_info = db.execute('''
+                    SELECT f.farm_name, u.name as consumer_name, p.product_name as item_name
+                    FROM product_orders po
+                    JOIN products p ON po.product_id = p.product_id
+                    JOIN farmers f ON p.farmer_id = f.farmer_id
+                    JOIN users u ON po.consumer_id = u.user_id
+                    WHERE po.product_order_id = ?
+                ''', (t['product_order_id'],)).fetchone()
+                task_dict.update(dict(order_info) if order_info else {})
+            enriched.append(task_dict)
+        return enriched
+
+    available_tasks = get_enriched_tasks('SELECT * FROM delivery_tasks WHERE status = "Pending"')
     
-    # My tasks (Accepted, Picked Up)
-    my_tasks = db.execute('''
+    my_tasks = get_enriched_tasks('''
         SELECT * FROM delivery_tasks 
-        WHERE delivery_partner_id = ? AND status IN ("Accepted", "Picked Up")
+        WHERE delivery_partner_id = ? AND status IN ("Accepted", "Picked Up", "Preparing")
         ORDER BY status ASC
-    ''', (user_id,)).fetchall()
+    ''', (user_id,))
     
-    # Completed tasks
-    completed_tasks = db.execute('''
+    completed_tasks = get_enriched_tasks('''
         SELECT * FROM delivery_tasks 
         WHERE delivery_partner_id = ? AND status = "Delivered"
         ORDER BY created_at DESC LIMIT 10
-    ''', (user_id,)).fetchall()
+    ''', (user_id,))
     
     # Simple Route Optimization for "My Tasks"
     optimized_tasks = []
@@ -1123,10 +1338,13 @@ def picked_up(delivery_id):
         WHERE delivery_id = ? AND delivery_partner_id = ?
     ''', (delivery_id, session['user_id']))
     
-    task = db.execute('SELECT order_id FROM delivery_tasks WHERE delivery_id = ?', (delivery_id,)).fetchone()
+    task = db.execute('SELECT * FROM delivery_tasks WHERE delivery_id = ?', (delivery_id,)).fetchone()
     if task:
         # Also update the main order status
-        db.execute('UPDATE orders SET status = "Out for Delivery" WHERE order_id = ?', (task['order_id'],))
+        if task['order_type'] == 'milk':
+            db.execute('UPDATE orders SET status = "Out for Delivery", order_status = "Out for Delivery" WHERE order_id = ?', (task['order_id'],))
+        else:
+            db.execute('UPDATE product_orders SET status = "Out for Delivery", order_status = "Out for Delivery" WHERE product_order_id = ?', (task['product_order_id'],))
         
     db.commit()
     flash('Task marked as Picked Up! Consumer has been notified via order status.', 'info')
@@ -1144,13 +1362,58 @@ def delivered(delivery_id):
         WHERE delivery_id = ? AND delivery_partner_id = ?
     ''', (delivery_id, session['user_id']))
     
-    task = db.execute('SELECT order_id FROM delivery_tasks WHERE delivery_id = ?', (delivery_id,)).fetchone()
+    task = db.execute('SELECT * FROM delivery_tasks WHERE delivery_id = ?', (delivery_id,)).fetchone()
     if task:
         # Also update the main order status
-        db.execute('UPDATE orders SET status = "Delivered" WHERE order_id = ?', (task['order_id'],))
+        if task['order_type'] == 'milk':
+            db.execute('UPDATE orders SET status = "Delivered", order_status = "Delivered" WHERE order_id = ?', (task['order_id'],))
+        else:
+            db.execute('UPDATE product_orders SET status = "Delivered", order_status = "Delivered" WHERE product_order_id = ?', (task['product_order_id'],))
         
     db.commit()
     flash('Delivery completed successfully! Order status updated for consumer.', 'success')
+    return redirect(url_for('delivery_dashboard'))
+
+
+@app.route('/delivery/update-status/<int:delivery_id>', methods=['POST'])
+@login_required
+@delivery_required
+def update_delivery_status(delivery_id):
+    new_status = request.form['status']
+    db = get_db()
+    
+    # Map delivery_task status to order_status if needed
+    order_status_map = {
+        'Accepted': 'Confirmed',
+        'Preparing': 'Preparing',
+        'Picked Up': 'Out for Delivery',
+        'Delivered': 'Delivered'
+    }
+    
+    db.execute('''
+        UPDATE delivery_tasks 
+        SET status = ? 
+        WHERE delivery_id = ? AND delivery_partner_id = ?
+    ''', (new_status, delivery_id, session['user_id']))
+    
+    task = db.execute('SELECT * FROM delivery_tasks WHERE delivery_id = ?', (delivery_id,)).fetchone()
+    if task:
+        order_status = order_status_map.get(new_status, new_status)
+        if task['order_type'] == 'milk':
+            db.execute('UPDATE orders SET order_status = ? WHERE order_id = ?', (order_status, task['order_id']))
+            if new_status == 'Delivered':
+                db.execute('UPDATE orders SET status = "Delivered" WHERE order_id = ?', (task['order_id'],))
+            elif new_status == 'Picked Up':
+                db.execute('UPDATE orders SET status = "Out for Delivery" WHERE order_id = ?', (task['order_id'],))
+        else:
+            db.execute('UPDATE product_orders SET order_status = ? WHERE product_order_id = ?', (order_status, task['product_order_id']))
+            if new_status == 'Delivered':
+                db.execute('UPDATE product_orders SET status = "Delivered" WHERE product_order_id = ?', (task['product_order_id'],))
+            elif new_status == 'Picked Up':
+                db.execute('UPDATE product_orders SET status = "Out for Delivery" WHERE product_order_id = ?', (task['product_order_id'],))
+
+    db.commit()
+    flash(f'Status updated to {new_status}!', 'success')
     return redirect(url_for('delivery_dashboard'))
 
 

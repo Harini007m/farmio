@@ -151,8 +151,8 @@
     <!-- Farmer Marketplace Section -->
     <div class="d-flex justify-content-between align-items-end mb-4 animate-fade">
         <div>
-            <h3 class="fw-bold text-dark mb-1">Nearby Verified Farms</h3>
-            <p class="text-muted small mb-0">Standardized proximity matching within 7km</p>
+        <h3 class="fw-bold text-dark mb-1">Nearby Verified Farms</h3>
+        <p class="text-muted small mb-0">Standardized proximity matching within {{ max_distance }}km</p>
         </div>
         <a href="{{ url_for('consumer_dashboard') }}"
             class="text-primary x-small fw-bold text-uppercase text-decoration-none">Refresh Feed ⟳</a>
@@ -186,10 +186,13 @@
                             </div>
                         </div>
                     </div>
-                    <div class="position-absolute top-0 end-0 p-4">
+                    <div class="position-absolute top-0 end-0 p-4 text-end">
                         <div
-                            class="bg-white shadow-sm border border-light text-primary rounded-pill px-3 py-1 x-small fw-bold">
+                            class="bg-white shadow-sm border border-light text-primary rounded-pill px-3 py-1 x-small fw-bold mb-1">
                             {{ farmer['distance_km'] if farmer['distance_km'] > 0 else '0' }} km
+                        </div>
+                        <div class="bg-success text-white rounded-pill px-3 py-1 x-small fw-bold">
+                            {{ farmer['trust_score'] }}% Trust
                         </div>
                     </div>
                 </div>
@@ -208,11 +211,15 @@
                         </div>
                         {% if farmer['collection_time'] %}
                         <div class="d-flex justify-content-between align-items-center px-2">
-                            <span class="text-muted small">Supply Window</span>
+                            <span class="text-muted small">Milking Time</span>
                             <span class="badge bg-primary-soft text-primary rounded-pill x-small fw-bold px-3 py-2">{{
                                 farmer['collection_time'] }}</span>
                         </div>
                         {% endif %}
+                        <div class="d-flex justify-content-between align-items-center px-2">
+                            <span class="text-muted small">Delivery Window</span>
+                            <span class="text-dark x-small fw-bold">{{ farmer['delivery_window'] }}</span>
+                        </div>
                     </div>
 
                     <div class="row g-2">
@@ -281,7 +288,12 @@
                                     <td class="fw-bold text-dark py-4">{{ order['farm_name'] }}</td>
                                     <td class="fw-medium text-dark">{{ order['quantity'] }} Litres</td>
                                     <td class="text-center">
-                                        <span class="badge-status {{ order['status'] }}">{{ order['status'] }}</span>
+                                        <div class="d-flex flex-column align-items-center">
+                                            <span class="badge-status {{ order['status'] }} mb-1">{{ order['status'] }}</span>
+                                            {% if order['order_status'] %}
+                                            <span class="x-small text-muted fw-bold text-uppercase">{{ order['order_status'] }}</span>
+                                            {% endif %}
+                                        </div>
                                     </td>
                                 </tr>
                                 {% endfor %}

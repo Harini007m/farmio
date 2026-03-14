@@ -77,21 +77,21 @@
             </div>
         </div>
         <div class="col-lg-3 col-md-6">
-            <div class="card border-0 shadow-premium h-100 transition-all hover-up" style="border-radius: 24px;">
+            <div class="card border-0 shadow-premium h-100 transition-all hover-up"
+                style="border-radius: 24px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white;">
                 <div class="card-body p-4 text-center text-md-start">
                     <div class="d-flex align-items-center justify-content-between mb-3">
-                        <div class="bg-warning-soft text-warning p-3 rounded-2xl d-flex align-items-center justify-content-center"
-                            style="width: 52px; height: 52px;">
+                        <div class="bg-white text-success p-3 rounded-2xl shadow-sm d-flex align-items-center justify-content-center"
+                            style="width: 50px; height: 50px;">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M21 10V4a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6h18Z"></path>
-                                <path d="M3 10v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V10"></path>
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"></path>
                             </svg>
                         </div>
-                        <span class="x-small fw-bold text-muted text-uppercase letter-spacing-1">Inventory</span>
+                        <span class="x-small fw-bold text-white opacity-50 text-uppercase letter-spacing-1">Trust Score</span>
                     </div>
-                    <h3 class="fw-bold mb-1 text-dark">{{ remaining }}<small class="text-muted ms-1 h6">L</small></h3>
-                    <p class="text-muted x-small mb-0 fw-medium">Currently Available</p>
+                    <h3 class="fw-bold mb-1 text-white">{{ trust_score }}%</h3>
+                    <p class="text-white opacity-75 x-small mb-0 fw-medium">Based on fulfillment & ratings</p>
                 </div>
             </div>
         </div>
@@ -114,6 +114,50 @@
                     </div>
                     <h1 class="fw-bold mb-1 text-white">{{ today_orders|length }}</h1>
                     <p class="text-white opacity-75 x-small mb-0 fw-medium">Open Fulfillment Tickets</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feature 4: Sales Overview -->
+    <div class="row g-4 mb-5 animate-fade" style="animation-delay: 0.15s;">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-premium p-4" style="border-radius: 28px;">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold mb-0">Sales Analytics</h5>
+                    <div class="dropdown">
+                        <button class="btn btn-light btn-sm rounded-pill px-3 fw-bold x-small border text-muted" type="button">Last 7 Days</button>
+                    </div>
+                </div>
+                <div style="height: 250px;">
+                    <canvas id="salesChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-premium h-100 bg-primary bg-opacity-10" style="border-radius: 28px;">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold text-primary mb-4 text-uppercase x-small letter-spacing-1">Revenue Overview</h6>
+                    <div class="vstack gap-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="x-small text-muted fw-bold">REVENUE TODAY</div>
+                                <div class="h4 fw-bold mb-0">Rs. {{ "%.2f"|format(today_revenue) }}</div>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="x-small text-muted fw-bold">TOTAL SOLD TODAY</div>
+                                <div class="h4 fw-bold mb-0">{{ today_milk_sold }} L</div>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="x-small text-muted fw-bold">ORDERS THIS WEEK</div>
+                                <div class="h4 fw-bold mb-0">{{ week_orders_count }}</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -384,4 +428,117 @@
         transition: all 0.3s ease;
     }
 </style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script id="chart-data" type="application/json">
+    {
+        "days": {{ days|tojson }},
+        "daily_sales": {{ daily_sales_data|tojson }},
+        "weekly_revenue": {{ weekly_revenue_data|tojson }}
+    }
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const chartDataElement = document.getElementById('chart-data');
+        const chartData = JSON.parse(chartDataElement.textContent);
+        
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: chartData.days,
+                datasets: [{
+                    label: 'Milk Sold (L)',
+                    data: chartData.daily_sales,
+                    borderColor: '#2563eb',
+                    backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                    borderWidth: 3,
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: '#2563eb',
+                    pointBorderWidth: 2,
+                    pointRadius: 4
+                }, {
+                    label: 'Revenue (Rs)',
+                    data: chartData.weekly_revenue,
+                    borderColor: '#10b981',
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    tension: 0.4,
+                    pointRadius: 0,
+                    yAxisID: 'y1'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            font: {
+                                size: 10,
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        padding: 12,
+                        backgroundColor: '#fff',
+                        titleColor: '#1e293b',
+                        bodyColor: '#475569',
+                        borderColor: '#e2e8f0',
+                        borderWidth: 1,
+                        usePointStyle: true
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            font: {
+                                size: 10
+                            }
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: '#f8fafc'
+                        },
+                        ticks: {
+                            font: {
+                                size: 10
+                            }
+                        }
+                    },
+                    y1: {
+                        position: 'right',
+                        beginAtZero: true,
+                        grid: {
+                            drawOnChartArea: false
+                        },
+                        ticks: {
+                            font: {
+                                size: 10
+                            }
+                        }
+                    }
+                },
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'x',
+                    intersect: false
+                }
+            }
+        });
+    });
+</script>
 {% endblock %}
